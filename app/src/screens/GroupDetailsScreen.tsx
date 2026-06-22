@@ -127,9 +127,7 @@ export default function GroupDetailsScreen() {
 
           {/* Balance Pills */}
           <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-            <div className={`px-4 py-2 rounded-full text-sm font-medium shrink-0 ${
-              myBalance >= 0 ? 'bg-[rgba(16,185,129,0.25)] text-white' : 'bg-[rgba(239,68,68,0.25)] text-white'
-            }`}>
+            <div className={`px-4 py-2 rounded-full text-sm font-medium shrink-0 ${myBalance >= 0 ? 'bg-[rgba(16,185,129,0.25)] text-white' : 'bg-[rgba(239,68,68,0.25)] text-white'}`}>
               You: {myBalance >= 0 ? '+' : ''}{formatCurrency(Math.abs(myBalance), group.currency)}
             </div>
             {balances_list.filter(b => b.memberId !== '1').map(b => (
@@ -142,7 +140,7 @@ export default function GroupDetailsScreen() {
       </div>
 
       {/* Quick Actions */}
-      <div className="flex gap-3 px-5 py-4 bg-white dark:bg-[#151B2C] border-b border-[#F0F0F0] dark:border-[#1F293D] sticky top-16 z-10 transition-colors">
+      <div className="flex gap-3 px-5 py-4  border-b border-[#F0F0F0] dark:border-[#1F293D] sticky top-16 z-10 transition-colors">
         <button
           onClick={() => setShowAddExpense(true)}
           className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#4F46E5] text-white rounded-xl text-sm font-medium shadow-button hover:bg-[#3f38b7] transition-all active:scale-95 cursor-pointer"
@@ -226,7 +224,7 @@ export default function GroupDetailsScreen() {
                 placeholder="What's this for?" title="Expense description" className="w-full px-4 py-3 bg-transparent dark:text-white border-2 border-[#E0E0E0] dark:border-[#2A364F] rounded-xl text-sm focus:border-[#4F46E5] dark:focus:border-indigo-400 focus:outline-none mb-3 transition-all" />
 
               <div className="relative mb-3">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-bold text-[#888] dark:text-[#94A3B8]">Rs.</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-bold text-[#888] dark:text-[#94A3B8]">{formatCurrency(Number(expenseAmount), group.currency).split(' ')[0]}</span>
                 <input type="number" value={expenseAmount} onChange={e => setExpenseAmount(e.target.value)}
                   placeholder="0.00" title="Expense amount" className="w-full pl-12 pr-4 py-3 text-2xl font-bold bg-transparent dark:text-white border-2 border-[#E0E0E0] dark:border-[#2A364F] rounded-xl focus:border-[#4F46E5] dark:focus:border-indigo-400 focus:outline-none transition-all" />
               </div>
@@ -237,9 +235,8 @@ export default function GroupDetailsScreen() {
                 <div className="flex gap-2 overflow-x-auto scrollbar-hide">
                   {group.members.map(m => (
                     <button key={m.id} onClick={() => setExpensePaidBy(m.id)}
-                      className={`px-3 py-2 rounded-full text-xs font-medium shrink-0 transition-all cursor-pointer ${
-                        expensePaidBy === m.id ? 'bg-[#4F46E5] text-white' : 'bg-[#F5F5F5] dark:bg-[#2A364F] text-[#333] dark:text-[#E2E8F0] hover:bg-[#E5E5E5] dark:hover:bg-[#34425F]'
-                      }`}>{m.name}</button>
+                      className={`px-3 py-2 rounded-full text-xs font-medium shrink-0 transition-all cursor-pointer ${expensePaidBy === m.id ? 'bg-[#4F46E5] text-white' : 'bg-[#F5F5F5] dark:bg-[#2A364F] text-[#333] dark:text-[#E2E8F0] hover:bg-[#E5E5E5] dark:hover:bg-[#34425F]'
+                        }`}>{m.name}</button>
                   ))}
                 </div>
               </div>
@@ -250,9 +247,8 @@ export default function GroupDetailsScreen() {
                 <div className="flex gap-2">
                   {splitTypes.map(st => (
                     <button key={st} onClick={() => setSplitType(st)}
-                      className={`flex-1 py-2 rounded-xl text-xs font-medium capitalize transition-all cursor-pointer ${
-                        splitType === st ? 'bg-[#4F46E5] text-white shadow-sm' : 'bg-[#F5F5F5] dark:bg-[#2A364F] text-[#888] dark:text-[#94A3B8] hover:bg-[#E5E5E5] dark:hover:bg-[#34425F]'
-                      }`}>{st}</button>
+                      className={`flex-1 py-2 rounded-xl text-xs font-medium capitalize transition-all cursor-pointer ${splitType === st ? 'bg-[#4F46E5] text-white shadow-sm' : 'bg-[#F5F5F5] dark:bg-[#2A364F] text-[#888] dark:text-[#94A3B8] hover:bg-[#E5E5E5] dark:hover:bg-[#34425F]'
+                        }`}>{st}</button>
                   ))}
                 </div>
               </div>
@@ -263,9 +259,8 @@ export default function GroupDetailsScreen() {
                 <div className="flex gap-2 overflow-x-auto scrollbar-hide">
                   {categories.map(cat => (
                     <button key={cat} onClick={() => setExpenseCategory(cat)}
-                      className={`px-3 py-2 rounded-full text-xs font-medium shrink-0 transition-all cursor-pointer ${
-                        expenseCategory === cat ? 'bg-[#4F46E5] text-white' : 'bg-[#F5F5F5] dark:bg-[#2A364F] text-[#333] dark:text-[#E2E8F0] hover:bg-[#E5E5E5] dark:hover:bg-[#34425F]'
-                      }`}>{cat}</button>
+                      className={`px-3 py-2 rounded-full text-xs font-medium shrink-0 transition-all cursor-pointer ${expenseCategory === cat ? 'bg-[#4F46E5] text-white' : 'bg-[#F5F5F5] dark:bg-[#2A364F] text-[#333] dark:text-[#E2E8F0] hover:bg-[#E5E5E5] dark:hover:bg-[#34425F]'
+                        }`}>{cat}</button>
                   ))}
                 </div>
               </div>
@@ -306,9 +301,8 @@ export default function GroupDetailsScreen() {
                 <div className="flex gap-2 overflow-x-auto scrollbar-hide">
                   {balances_list.filter(b => b.memberId !== '1' && b.netBalance < 0).map(b => (
                     <button key={b.memberId} onClick={() => setSettleMember(b.memberId)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium shrink-0 transition-all cursor-pointer ${
-                        settleMember === b.memberId ? 'bg-[#4F46E5] text-white' : 'bg-[#F5F5F5] dark:bg-[#2A364F] text-[#333] dark:text-[#E2E8F0] hover:bg-[#E5E5E5] dark:hover:bg-[#34425F]'
-                      }`}>{b.memberName}</button>
+                      className={`px-4 py-2 rounded-full text-sm font-medium shrink-0 transition-all cursor-pointer ${settleMember === b.memberId ? 'bg-[#4F46E5] text-white' : 'bg-[#F5F5F5] dark:bg-[#2A364F] text-[#333] dark:text-[#E2E8F0] hover:bg-[#E5E5E5] dark:hover:bg-[#34425F]'
+                        }`}>{b.memberName}</button>
                   ))}
                 </div>
               </div>

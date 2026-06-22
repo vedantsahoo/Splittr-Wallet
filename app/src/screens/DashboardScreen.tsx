@@ -72,7 +72,7 @@ export default function DashboardScreen() {
           <div className="relative z-10">
             <p className="text-white/70 text-sm mb-1">Total Balance</p>
             <h2 className="text-4xl lg:text-5xl font-bold tracking-tight">
-              <CountUp end={currentBalance} duration={1.5} decimals={2} prefix="Rs. " separator="," />
+              <CountUp end={currentBalance} duration={1.5} decimals={2} prefix={formatCurrency(currentBalance, selectedCurrency).split(' ')[0] + " "} separator="," />
             </h2>
             <div className="flex gap-2 mt-4 flex-wrap">
               {balances.map(b => (
@@ -84,7 +84,7 @@ export default function DashboardScreen() {
                     : 'bg-white/20 text-white hover:bg-white/30'
                     }`}
                 >
-                  {b.flag} {b.currency}
+                  {b.currency} {b.symbol}
                 </button>
               ))}
             </div>

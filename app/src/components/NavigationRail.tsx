@@ -17,7 +17,7 @@ export default function NavigationRail() {
   const navigate = useNavigate();
 
   return (
-    <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-65 z-100 flex-col border-r border-black/5 dark:border-[#1F293D] bg-white frosted dark:*:bg-[#151B2C]/90">
+    <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-70 z-100 flex-col border-r border-black/5 dark:border-[#1F293D] bg-white frosted dark:*:bg-[#151B2C]/90">
       <div className="px-6 pt-6 pb-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl gradient-hero flex items-center justify-center">

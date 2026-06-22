@@ -72,11 +72,10 @@ export default function AnalyticsScreen() {
               <button
                 key={p}
                 onClick={() => setActivePeriod(p)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                  activePeriod === p
-                    ? 'bg-[#4F46E5] text-white shadow-sm'
-                    : 'text-[#888] dark:text-[#94A3B8] hover:text-[#333] dark:hover:text-white'
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${activePeriod === p
+                  ? 'bg-[#4F46E5] text-white shadow-sm'
+                  : 'text-[#888] dark:text-[#94A3B8] hover:text-[#333] dark:hover:text-white'
+                  }`}
               >
                 {p}
               </button>
@@ -201,7 +200,7 @@ export default function AnalyticsScreen() {
               <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#1F293D' : '#F0F0F0'} vertical={false} />
                 <XAxis dataKey="month" tick={{ fontSize: 12, fill: isDarkMode ? '#94A3B8' : '#888' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 12, fill: isDarkMode ? '#94A3B8' : '#888' }} axisLine={false} tickLine={false} tickFormatter={v => `Rs.${v / 1000}k`} />
+                <YAxis tick={{ fontSize: 12, fill: isDarkMode ? '#94A3B8' : '#888' }} axisLine={false} tickLine={false} tickFormatter={v => `${v / 1000}k`} />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: isDarkMode ? 'rgba(255,255,255,0.03)' : 'rgba(79,70,229,0.05)' }} />
                 <Bar dataKey="amount" fill="#4F46E5" radius={[4, 4, 0, 0]} animationDuration={800} />
               </BarChart>
