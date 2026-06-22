@@ -82,6 +82,8 @@ export default function SettingsScreen() {
               </div>
               <button
                 onClick={() => { setEditName(user?.name || ''); setShowEditProfile(true); }}
+                title="Edit profile"
+                aria-label="Edit profile"
                 className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#4F46E5] flex items-center justify-center border-2 border-white"
               >
                 <Edit className="w-3 h-3 text-white" />
@@ -92,7 +94,7 @@ export default function SettingsScreen() {
               <p className="text-sm text-[#888]">{user?.email}</p>
               <p className="text-xs text-[#888]">{user?.phone}</p>
               <button className="text-xs text-[#4F46E5] font-medium mt-1 flex items-center gap-1">
-                <span>SW-78456231{user?.walletId}</span>
+                <span>{user?.walletId}</span>
               </button>
             </div>
           </div>
@@ -108,6 +110,8 @@ export default function SettingsScreen() {
             right={
               <button
                 onClick={(e) => { e.stopPropagation(); setTwoFA(!twoFA); }}
+                title={twoFA ? 'Disable two-factor authentication' : 'Enable two-factor authentication'}
+                aria-label={twoFA ? 'Disable two-factor authentication' : 'Enable two-factor authentication'}
                 className={`w-11 h-6 rounded-full transition-all relative ${twoFA ? 'bg-[#4F46E5]' : 'bg-[#E0E0E0]'}`}
               >
                 <div className={`w-5 h-5 rounded-full bg-white shadow absolute top-0.5 transition-all ${twoFA ? 'left-[22px]' : 'left-0.5'}`} />

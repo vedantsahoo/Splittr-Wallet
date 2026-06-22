@@ -26,7 +26,7 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: true,
       dailyLimit: 500000,
       monthlyLimit: 5000000,
-      login: () => set({ isAuthenticated: true }),
+      login: () => set({ isAuthenticated: true, user: new Object() as User }),
       logout: () => set({ isAuthenticated: false, user: null }),
       updateProfile: (data) =>
         set((state) => ({
