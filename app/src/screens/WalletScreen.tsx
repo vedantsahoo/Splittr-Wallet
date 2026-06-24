@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import CountUp from 'react-countup';
 import { QRCodeSVG } from 'qrcode.react';
 import {
   Plus, ArrowUpRight, ArrowDownLeft, QrCode, CreditCard,
   Landmark, ChevronDown, TrendingUp, Utensils, Car, ShoppingBag,
   Film, Receipt, Plane, X,
 } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
 import { useWalletStore } from '@/store/walletStore';
 import { useUIStore } from '@/store/uiStore';
 import { formatCurrency, formatRelativeDate } from '@/lib/utils';
@@ -47,9 +47,8 @@ function TransactionRow({ tx }: { tx: Transaction }) {
         <p className={`text-sm font-semibold ${amountColor}`}>
           {prefix}{formatCurrency(tx.amount, tx.currency)}
         </p>
-        <span className={`inline-block w-1.5 h-1.5 rounded-full mt-1 ${
-          tx.status === 'completed' ? 'bg-[#10B981]' : tx.status === 'pending' ? 'bg-[#F59E0B]' : 'bg-[#EF4444]'
-        }`} />
+        <span className={`inline-block w-1.5 h-1.5 rounded-full mt-1 ${tx.status === 'completed' ? 'bg-[#10B981]' : tx.status === 'pending' ? 'bg-[#F59E0B]' : 'bg-[#EF4444]'
+          }`} />
       </div>
     </div>
   );
@@ -57,6 +56,7 @@ function TransactionRow({ tx }: { tx: Transaction }) {
 
 export default function WalletScreen() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const { balances, transactions, selectedCurrency, setCurrency } = useWalletStore();
   const { showToast } = useUIStore();
   const [activeFilter, setActiveFilter] = useState('All');
@@ -123,9 +123,9 @@ export default function WalletScreen() {
             </div>
           </div>
           <h2 className="text-4xl lg:text-5xl font-bold tracking-tight">
-            <CountUp end={currentBalance} duration={1.5} decimals={2} prefix="Rs. " separator="," />
+            {formatCurrency(currentBalance, selectedCurrency)}
           </h2>
-          <p className="text-white/60 text-xs mt-2">Wallet ID: SW-78456231</p>
+          <p className="text-white/60 text-xs mt-2">Wallet ID: {user?.walletId}</p>
 
           {/* All balances */}
           <div className="flex gap-3 mt-4 flex-wrap">
@@ -222,9 +222,8 @@ export default function WalletScreen() {
             <button
               key={tab}
               onClick={() => setActiveFilter(tab)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all shrink-0 cursor-pointer ${
-                activeFilter === tab ? 'bg-[#4F46E5] text-white shadow-button' : 'bg-[#F5F5F5] dark:bg-[#1E2638] text-[#888] dark:text-[#94A3B8] hover:bg-[#E0E0E0] dark:hover:bg-[#2A364F]'
-              }`}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all shrink-0 cursor-pointer ${activeFilter === tab ? 'bg-[#4F46E5] text-white shadow-button' : 'bg-[#F5F5F5] dark:bg-[#1E2638] text-[#888] dark:text-[#94A3B8] hover:bg-[#E0E0E0] dark:hover:bg-[#2A364F]'
+                }`}
             >
               {tab}
             </button>

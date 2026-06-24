@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import CountUp from 'react-countup';
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
@@ -96,7 +95,7 @@ export default function AnalyticsScreen() {
             </div>
             <p className="text-xs text-[#888] dark:text-[#94A3B8] mb-1">Total Spent</p>
             <p className="text-2xl font-bold text-[#333] dark:text-white">
-              <CountUp end={totalSpent} duration={1.2} prefix="Rs. " separator="," />
+              {formatCurrency(totalSpent, selectedCurrency)}
             </p>
             <p className="text-xs text-[#EF4444] mt-1">+12% from last month</p>
           </motion.div>
@@ -112,7 +111,7 @@ export default function AnalyticsScreen() {
             </div>
             <p className="text-xs text-[#888] dark:text-[#94A3B8] mb-1">Total Received</p>
             <p className="text-2xl font-bold text-[#10B981]">
-              <CountUp end={totalReceived} duration={1.2} prefix="Rs. " separator="," />
+              {formatCurrency(totalReceived, selectedCurrency)}
             </p>
             <p className="text-xs text-[#10B981] mt-1">+8% from last month</p>
           </motion.div>
@@ -128,7 +127,7 @@ export default function AnalyticsScreen() {
             </div>
             <p className="text-xs text-[#888] dark:text-[#94A3B8] mb-1">Group Expenses</p>
             <p className="text-2xl font-bold text-[#333] dark:text-white">
-              <CountUp end={groupExpenses} duration={1.2} prefix="Rs. " separator="," />
+              {formatCurrency(groupExpenses, selectedCurrency)}
             </p>
             <p className="text-xs text-[#888] dark:text-[#94A3B8] mt-1">Across {groups.length} groups</p>
           </motion.div>
@@ -166,7 +165,7 @@ export default function AnalyticsScreen() {
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <p className="text-xl font-bold text-[#333] dark:text-white">{formatCurrency(totalSpent, 'INR')}</p>
+                <p className="text-xl font-bold text-[#333] dark:text-white">{formatCurrency(totalSpent, selectedCurrency)}</p>
                 <p className="text-[10px] text-[#888] dark:text-[#94A3B8]">Total Spent</p>
               </div>
             </div>

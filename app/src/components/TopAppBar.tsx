@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Bell, ArrowLeft, Wallet } from 'lucide-react';
+import { ArrowLeft, Wallet } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
 interface TopAppBarProps {
@@ -40,12 +40,12 @@ export default function TopAppBar({ title, scrolled }: TopAppBarProps) {
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#EF4444] rounded-full" />
         </button> */}
         <div className="flex items-center gap-1 px-1.5 py-1.5 border border-black/5 dark:border-[#51555c] rounded-full hover:bg-gray-200 dark:hover:bg-[#1F293D]">
-          <button title='User Profile' aria-label='User Profile' onClick={() => navigate('/settings')} className="w-11 h-11 rounded-full bg-[#4F46E5] flex items-center justify-center text-white text-sm font-semibold overflow-hidden shrink-0">
-            {user?.avatar ? (<img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />) : (user?.name.split(' ').map(n => n[0]).join(''))}
-          </button>
           {/* <div className="min-w-0">
             <p className="text-sm font-medium text-[#333] dark:text-white truncate">Hi, {user?.name.split(' ')[0]}</p>
           </div> */}
+          <button title='User Profile' aria-label='User Profile' onClick={() => navigate('/settings')} className="w-11 h-11 rounded-full bg-[#4F46E5] flex items-center justify-center text-white text-sm font-semibold overflow-hidden shrink-0">
+            {user?.avatar ? (<img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />) : (user?.name.split(' ').map(n => n[0]).join(''))}
+          </button>
         </div>
       </div>
     </header>

@@ -6,14 +6,15 @@ import { useUIStore } from '@/store/uiStore';
 import { formatCurrency } from '@/lib/utils';
 
 const mockContacts = [
-  { id: '1', name: 'Rahul Sharma', phone: '+91 98765 43210', initials: 'RS', color: '#4F46E5' },
-  { id: '2', name: 'Priya Kapoor', phone: '+91 87654 32109', initials: 'PK', color: '#10B981' },
-  { id: '3', name: 'Amit Verma', phone: '+91 76543 21098', initials: 'AV', color: '#F59E0B' },
-  { id: '4', name: 'Sneha Gupta', phone: '+91 65432 10987', initials: 'SG', color: '#EF4444' },
-  { id: '5', name: 'Neha Patel', phone: '+91 54321 09876', initials: 'NP', color: '#6B4C9A' },
-  { id: '6', name: 'Karan Singh', phone: '+91 43210 98765', initials: 'KS', color: '#EC4899' },
-  { id: '7', name: 'Ananya Reddy', phone: '+91 32109 87654', initials: 'AR', color: '#3B82F6' },
-  { id: '8', name: 'Vikram Joshi', phone: '+91 21098 76543', initials: 'VJ', color: '#14B8A6' },
+  { id: '1', name: 'Animesh Sahu', phone: '+91 9876543210', initials: 'AS', color: '#4F46E5' },
+  { id: '2', name: 'Aradhana Chaudhary', phone: '+91 7011266435', initials: 'AC', color: '#9966FF' },
+  { id: '3', name: 'Sanjeevni Singh', phone: '+91 9111336025', initials: 'SS', color: '#10B981' },
+  { id: '4', name: 'Ansh Verma', phone: '+91 76543 21098', initials: 'AV', color: '#F59E0B' },
+  { id: '5', name: 'Neha Singh', phone: '+91 65432 10987', initials: 'NS', color: '#EF4444' },
+  { id: '6', name: 'Siddhima Saxena', phone: '+91 9479202055', initials: 'SS', color: '#6B4C9A' },
+  { id: '7', name: 'Siddharth Srivastav', phone: '+91 8120860675', initials: 'SS', color: '#EC4899' },
+  { id: '8', name: 'Anamika Yadav', phone: '+91 8109152336', initials: 'AY', color: '#3B82F6' },
+  { id: '9', name: 'Vaishnavi Gupta', phone: '+91 9818221115', initials: 'VG', color: '#14B8A6' },
 ];
 
 type Step = 'recipient' | 'amount' | 'confirm' | 'success';

@@ -61,12 +61,14 @@ export const useWalletStore = create<WalletState>((set, get) => ({
       ),
     })),
 
-  sendMoney: (amount, currency, _recipient) =>
-    set((state) => ({
+  sendMoney: (amount, currency, recipient) => {
+    void recipient;
+    return set((state) => ({
       balances: state.balances.map((b) =>
         b.currency === currency ? { ...b, amount: b.amount - amount } : b
       ),
-    })),
+    }));
+  },
 
   addTransaction: (transaction) =>
     set((state) => ({

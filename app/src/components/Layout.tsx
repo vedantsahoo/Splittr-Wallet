@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router';
+import { useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import TopAppBar from './TopAppBar';
 import BottomNavigation from './BottomNavigation';
@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useThemeStore } from '@/store/themeStore';
 
 const pageTitles: Record<string, string> = {
-  '/': 'Dashboard',
+  '/dashboard': 'Dashboard',
   '/wallet': 'Wallet',
   '/send': 'Send Money',
   '/groups': 'Groups',

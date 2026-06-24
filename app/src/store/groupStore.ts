@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { Group, GroupExpense } from '@/types';
 
 interface GroupState {
@@ -152,76 +153,82 @@ const initialGroups: Group[] = [
   },
 ];
 
-export const useGroupStore = create<GroupState>((set, get) => ({
-  groups: initialGroups,
-  currentGroupId: null,
+export const useGroupStore = create<GroupState>()(
+  persist(
+    (set, get) => ({
+      groups: initialGroups,
+      currentGroupId: null,
+      setCurrentGroup: (id: string | null) => set({ currentGroupId: id }),
 
-  setCurrentGroup: (id) => set({ currentGroupId: id }),
+      createGroup: (groupData: Omit<Group, 'id' | 'expenses' | 'totalExpenses'>) => {
+        const newGroup: Group = {
+          ...groupData,
+          id: Date.now().toString(),
+          expenses: [],
+          totalExpenses: 0,
+        };
+        set((state) => ({ groups: [...state.groups, newGroup] }));
+        return newGroup;
+      },
 
-  createGroup: (groupData) => {
-    const newGroup: Group = {
-      ...groupData,
-      id: Date.now().toString(),
-      expenses: [],
-      totalExpenses: 0,
-    };
-    set((state) => ({ groups: [...state.groups, newGroup] }));
-    return newGroup;
-  },
+      addExpense: (groupId: string, expense: Omit<GroupExpense, 'id'>) =>
+        set((state) => ({
+          groups: state.groups.map((g) => {
+            if (g.id === groupId) {
+              const newExpense = { ...expense, id: `e${Date.now()}` };
+              return {
+                ...g,
+                expenses: [newExpense, ...g.expenses],
+                totalExpenses: g.totalExpenses + expense.amount,
+              };
+            }
+            return g;
+          }),
+        })),
 
-  addExpense: (groupId, expense) =>
-    set((state) => ({
-      groups: state.groups.map((g) => {
-        if (g.id === groupId) {
-          const newExpense = { ...expense, id: `e${Date.now()}` };
-          return {
-            ...g,
-            expenses: [newExpense, ...g.expenses],
-            totalExpenses: g.totalExpenses + expense.amount,
-          };
-        }
-        return g;
-      }),
-    })),
+      deleteExpense: (groupId: string, expenseId: string) =>
+        set((state) => ({
+          groups: state.groups.map((g) => {
+            if (g.id === groupId) {
+              const expense = g.expenses.find((e) => e.id === expenseId);
+              return {
+                ...g,
+                expenses: g.expenses.filter((e) => e.id !== expenseId),
+                totalExpenses: g.totalExpenses - (expense?.amount || 0),
+              };
+            }
+            return g;
+          }),
+        })),
 
-  deleteExpense: (groupId, expenseId) =>
-    set((state) => ({
-      groups: state.groups.map((g) => {
-        if (g.id === groupId) {
-          const expense = g.expenses.find((e) => e.id === expenseId);
-          return {
-            ...g,
-            expenses: g.expenses.filter((e) => e.id !== expenseId),
-            totalExpenses: g.totalExpenses - (expense?.amount || 0),
-          };
-        }
-        return g;
-      }),
-    })),
+      getGroup: (id: string) => get().groups.find((g) => g.id === id),
 
-  getGroup: (id) => get().groups.find((g) => g.id === id),
-
-  getGroupBalances: (groupId) => {
-    const group = get().groups.find((g) => g.id === groupId);
-    if (!group) return [];
-    const memberBalances: Record<string, { name: string; paid: number; owed: number }> = {};
-    group.members.forEach((m) => {
-      memberBalances[m.id] = { name: m.name, paid: 0, owed: 0 };
-    });
-    group.expenses.forEach((exp) => {
-      if (memberBalances[exp.paidBy]) {
-        memberBalances[exp.paidBy].paid += exp.amount;
-      }
-      exp.shares.forEach((share) => {
-        if (memberBalances[share.memberId]) {
-          memberBalances[share.memberId].owed += share.amount;
-        }
-      });
-    });
-    return Object.entries(memberBalances).map(([memberId, data]) => ({
-      memberId,
-      memberName: data.name,
-      netBalance: data.paid - data.owed,
-    }));
-  },
-}));
+      getGroupBalances: (groupId: string) => {
+        const group = get().groups.find((g) => g.id === groupId);
+        if (!group) return [];
+        const memberBalances: Record<string, { name: string; paid: number; owed: number }> = {};
+        group.members.forEach((m) => {
+          memberBalances[m.id] = { name: m.name, paid: 0, owed: 0 };
+        });
+        group.expenses.forEach((exp) => {
+          if (memberBalances[exp.paidBy]) {
+            memberBalances[exp.paidBy].paid += exp.amount;
+          }
+          exp.shares.forEach((share) => {
+            if (memberBalances[share.memberId]) {
+              memberBalances[share.memberId].owed += share.amount;
+            }
+          });
+        });
+        return Object.entries(memberBalances).map(([memberId, data]) => ({
+          memberId,
+          memberName: data.name,
+          netBalance: data.paid - data.owed,
+        }));
+      },
+    }),
+    {
+      name: 'splittr-groups',
+    }
+  )
+);

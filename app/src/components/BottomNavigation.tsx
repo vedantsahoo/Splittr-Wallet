@@ -1,6 +1,5 @@
 import { NavLink } from 'react-router-dom';
 import { Home, Wallet, Users, BarChart3, ArrowUpRight } from 'lucide-react';
-// import { useAuthStore } from '@/store/authStore';
 
 const tabs = [
   { path: '/dashboard', label: 'Home', icon: Home },
@@ -8,11 +7,9 @@ const tabs = [
   { path: '/send', label: 'Send Money', icon: ArrowUpRight },
   { path: '/analytics', label: 'Analytics', icon: BarChart3 },
   { path: '/groups', label: 'Groups', icon: Users },
-  // { path: '/settings', label: 'Profile', icon: UserCircle },
 ];
 
 export default function BottomNavigation() {
-  // const { user } = useAuthStore();
 
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-100 h-18 bg-white dark:bg-[#151B2C] border-t border-[#F0F0F0] dark:border-[#1F293D] pb-[env(safe-area-inset-bottom)] transition-colors duration-200">

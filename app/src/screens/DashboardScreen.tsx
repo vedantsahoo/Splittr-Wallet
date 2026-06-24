@@ -1,9 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import CountUp from 'react-countup';
 import {
   Wallet, Send, Users, TrendingUp, ArrowRight, Plus,
-  Utensils, Car, ShoppingBag, Film, Receipt, Plane,
+  Utensils, Car, ShoppingBag, Film, Receipt, Plane
 } from 'lucide-react';
 import { useWalletStore } from '@/store/walletStore';
 import { useGroupStore } from '@/store/groupStore';
@@ -72,7 +71,7 @@ export default function DashboardScreen() {
           <div className="relative z-10">
             <p className="text-white/70 text-sm mb-1">Total Balance</p>
             <h2 className="text-4xl lg:text-5xl font-bold tracking-tight">
-              <CountUp end={currentBalance} duration={1.5} decimals={2} prefix={formatCurrency(currentBalance, selectedCurrency).split(' ')[0] + " "} separator="," />
+              {formatCurrency(currentBalance, selectedCurrency)}
             </h2>
             <div className="flex gap-2 mt-4 flex-wrap">
               {balances.map(b => (
