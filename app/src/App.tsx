@@ -21,8 +21,25 @@ const queryClient = new QueryClient({
   },
 });
 
+import { useEffect } from 'react';
+import { useWalletStore } from '@/store/walletStore';
+import { useGroupStore } from '@/store/groupStore';
+
 export default function App() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, init: initAuth } = useAuthStore();
+  const { init: initWallet } = useWalletStore();
+  const { init: initGroups } = useGroupStore();
+
+  useEffect(() => {
+    initAuth();
+  }, [initAuth]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      initWallet();
+      initGroups();
+    }
+  }, [isAuthenticated, initWallet, initGroups]);
 
   return (
     <QueryClientProvider client={queryClient}>

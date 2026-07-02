@@ -57,10 +57,14 @@ export default function LoginScreen() {
 
     setIsLoading(true);
     // Simulate API request delay
-    setTimeout(() => {
-      login(isLogin ? undefined : name, email);
+    setTimeout(async () => {
+      const res = await login(email, password);
       setIsLoading(false);
-      showToast('success', isLogin ? 'Welcome back to Splittr!' : 'Account created successfully!');
+      if (res.success) {
+        showToast('success', isLogin ? 'Welcome back to Splittr!' : 'Account created successfully!');
+      } else {
+        showToast('error', res.error || 'Invalid credentials');
+      }
     }, 1200);
   };
 
@@ -104,11 +108,15 @@ export default function LoginScreen() {
               // Wait briefly, then log in
               setTimeout(() => {
                 setIsLoading(true);
-                setTimeout(() => {
-                  login('Vedant Sahu', demoEmail);
+                setTimeout(async () => {
+                  const res = await login(demoEmail, demoPassword);
                   setIsLoading(false);
                   setIsDemoTyping(false);
-                  showToast('success', 'Logged in with Demo Account!');
+                  if (res.success) {
+                    showToast('success', 'Logged in with Demo Account!');
+                  } else {
+                    showToast('error', res.error || 'Failed to login with demo');
+                  }
                 }, 1000);
               }, 400);
             }
@@ -156,7 +164,7 @@ export default function LoginScreen() {
         <button
           onClick={toggleDarkMode}
           className="p-3 rounded-xl bg-white/70 dark:bg-[#043C31]/70 border border-black/5 dark:border-white/5 shadow-card hover:bg-white dark:hover:bg-[#043C31] text-[#10B981] dark:text-emerald-400 transition-all cursor-pointer"
-          title={isDarkMode ? "Light Mode" : "Dark Mode"}
+          title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
           aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
         >
           {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}

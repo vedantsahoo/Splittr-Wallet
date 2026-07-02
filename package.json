@@ -1,0 +1,14 @@
+{
+  "name": "Splittr_App",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install && npm install --prefix app && npm install --prefix server",
+    "dev:frontend": "npm run dev --prefix app",
+    "dev:backend": "npm run dev --prefix server",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

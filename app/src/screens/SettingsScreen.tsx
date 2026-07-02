@@ -73,11 +73,10 @@ export default function SettingsScreen() {
     showToast('success', 'Profile updated!');
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     showToast('info', 'Logged out successfully');
     setShowLogoutConfirm(false);
-    window.location.reload();
   };
 
   return (
