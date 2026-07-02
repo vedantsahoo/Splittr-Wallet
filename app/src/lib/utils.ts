@@ -83,8 +83,8 @@ export function getCategoryIcon(category: string): string {
 
 export function getCategoryColor(category: string): string {
   const colors: Record<string, string> = {
-    'Food & Dining': '#4F46E5',
-    'Transportation': '#6B4C9A',
+    'Food & Dining': '#10B981',
+    'Transportation': '#0D9488',
     'Shopping': '#10B981',
     'Entertainment': '#F59E0B',
     'Bills': '#EF4444',

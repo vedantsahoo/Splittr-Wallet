@@ -11,8 +11,8 @@ import { useThemeStore } from '@/store/themeStore';
 import { formatCurrency } from '@/lib/utils';
 
 const categoryData = [
-  { name: 'Food & Dining', value: 8500, color: '#4F46E5' },
-  { name: 'Transportation', value: 4200, color: '#6B4C9A' },
+  { name: 'Food & Dining', value: 8500, color: '#10B981' },
+  { name: 'Transportation', value: 4200, color: '#0D9488' },
   { name: 'Shopping', value: 6800, color: '#10B981' },
   { name: 'Entertainment', value: 3500, color: '#F59E0B' },
   { name: 'Bills', value: 2500, color: '#EF4444' },
@@ -33,7 +33,7 @@ const periods = ['This Week', 'This Month', 'This Year'];
 const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ value: number; name: string }> }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-[#333] dark:bg-[#1E2638] text-white dark:text-[#E2E8F0] text-xs px-3 py-2 rounded-lg border border-transparent dark:border-[#2A364F] shadow-sm">
+      <div className="bg-[#333] dark:bg-[#094C3E] text-white dark:text-[#E2E8F0] text-xs px-3 py-2 rounded-lg border border-transparent dark:border-[#0E6E5A] shadow-sm">
         {formatCurrency(payload[0].value, 'INR')}
       </div>
     );
@@ -63,16 +63,16 @@ export default function AnalyticsScreen() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-[#000] dark:text-white">Analytics</h2>
+            <h2 className="text-2xl font-bold text-[#000] dark:text-[#E2E8F0]">Analytics</h2>
             <p className="text-sm text-[#888] dark:text-[#94A3B8]">Track your spending patterns</p>
           </div>
-          <div className="flex gap-1 bg-[#F5F5F5] dark:bg-[#151B2C] border border-[#F0F0F0]/10 p-1 rounded-xl">
+          <div className="flex gap-1 bg-[#F5F5F5] dark:bg-[#043C31] border border-[#F0F0F0]/10 p-1 rounded-xl">
             {periods.map(p => (
               <button
                 key={p}
                 onClick={() => setActivePeriod(p)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${activePeriod === p
-                  ? 'bg-[#4F46E5] text-white shadow-sm'
+                  ? 'bg-[#10B981] text-white shadow-sm'
                   : 'text-[#888] dark:text-[#94A3B8] hover:text-[#333] dark:hover:text-white'
                   }`}
               >
@@ -88,13 +88,13 @@ export default function AnalyticsScreen() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
-            className="bg-white dark:bg-[#151B2C] border border-[#F0F0F0]/10 rounded-2xl p-5 shadow-card dark:shadow-none transition-colors"
+            className="bg-white dark:bg-[#043C31] border border-[#F0F0F0]/10 rounded-2xl p-5 shadow-card dark:shadow-none transition-colors"
           >
             <div className="w-10 h-10 rounded-xl bg-[rgba(239,68,68,0.08)] flex items-center justify-center mb-3">
               <TrendingDown className="w-5 h-5 text-[#EF4444]" />
             </div>
             <p className="text-xs text-[#888] dark:text-[#94A3B8] mb-1">Total Spent</p>
-            <p className="text-2xl font-bold text-[#333] dark:text-white">
+            <p className="text-2xl font-bold text-[#333] dark:text-[#E2E8F0]">
               {formatCurrency(totalSpent, selectedCurrency)}
             </p>
             <p className="text-xs text-[#EF4444] mt-1">+12% from last month</p>
@@ -104,7 +104,7 @@ export default function AnalyticsScreen() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white dark:bg-[#151B2C] border border-[#F0F0F0]/10 rounded-2xl p-5 shadow-card dark:shadow-none transition-colors"
+            className="bg-white dark:bg-[#043C31] border border-[#F0F0F0]/10 rounded-2xl p-5 shadow-card dark:shadow-none transition-colors"
           >
             <div className="w-10 h-10 rounded-xl bg-[rgba(16,185,129,0.08)] flex items-center justify-center mb-3">
               <TrendingUp className="w-5 h-5 text-[#10B981]" />
@@ -120,13 +120,13 @@ export default function AnalyticsScreen() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="bg-white dark:bg-[#151B2C] border border-[#F0F0F0]/10 rounded-2xl p-5 shadow-card dark:shadow-none transition-colors"
+            className="bg-white dark:bg-[#043C31] border border-[#F0F0F0]/10 rounded-2xl p-5 shadow-card dark:shadow-none transition-colors"
           >
-            <div className="w-10 h-10 rounded-xl bg-[rgba(79,70,229,0.08)] flex items-center justify-center mb-3">
-              <Users className="w-5 h-5 text-[#4F46E5] dark:text-indigo-400" />
+            <div className="w-10 h-10 rounded-xl bg-[rgba(16,185,129,0.08)] flex items-center justify-center mb-3">
+              <Users className="w-5 h-5 text-[#10B981] dark:text-emerald-400" />
             </div>
             <p className="text-xs text-[#888] dark:text-[#94A3B8] mb-1">Group Expenses</p>
-            <p className="text-2xl font-bold text-[#333] dark:text-white">
+            <p className="text-2xl font-bold text-[#333] dark:text-[#E2E8F0]">
               {formatCurrency(groupExpenses, selectedCurrency)}
             </p>
             <p className="text-xs text-[#888] dark:text-[#94A3B8] mt-1">Across {groups.length} groups</p>
@@ -138,9 +138,9 @@ export default function AnalyticsScreen() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white dark:bg-[#151B2C] border border-[#F0F0F0]/10 rounded-2xl p-5 shadow-card dark:shadow-none mb-5 transition-colors"
+          className="bg-white dark:bg-[#043C31] border border-[#F0F0F0]/10 rounded-2xl p-5 shadow-card dark:shadow-none mb-5 transition-colors"
         >
-          <h3 className="text-lg font-semibold text-[#000] dark:text-white mb-1">Spending by Category</h3>
+          <h3 className="text-lg font-semibold text-[#000] dark:text-[#E2E8F0] mb-1">Spending by Category</h3>
           <p className="text-xs text-[#888] dark:text-[#94A3B8] mb-4">Where your money goes</p>
 
           <div className="flex flex-col sm:flex-row items-center gap-6">
@@ -165,7 +165,7 @@ export default function AnalyticsScreen() {
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <p className="text-xl font-bold text-[#333] dark:text-white">{formatCurrency(totalSpent, selectedCurrency)}</p>
+                <p className="text-xl font-bold text-[#333] dark:text-[#E2E8F0]">{formatCurrency(totalSpent, selectedCurrency)}</p>
                 <p className="text-[10px] text-[#888] dark:text-[#94A3B8]">Total Spent</p>
               </div>
             </div>
@@ -189,19 +189,19 @@ export default function AnalyticsScreen() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
-          className="bg-white dark:bg-[#151B2C] border border-[#F0F0F0]/10 rounded-2xl p-5 shadow-card dark:shadow-none mb-5 transition-colors"
+          className="bg-white dark:bg-[#043C31] border border-[#F0F0F0]/10 rounded-2xl p-5 shadow-card dark:shadow-none mb-5 transition-colors"
         >
-          <h3 className="text-lg font-semibold text-[#000] dark:text-white mb-1">Monthly Trend</h3>
+          <h3 className="text-lg font-semibold text-[#000] dark:text-[#E2E8F0] mb-1">Monthly Trend</h3>
           <p className="text-xs text-[#888] dark:text-[#94A3B8] mb-4">Spending over time</p>
 
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#1F293D' : '#F0F0F0'} vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#D1FAE5' : '#F0F0F0'} vertical={false} />
                 <XAxis dataKey="month" tick={{ fontSize: 12, fill: isDarkMode ? '#94A3B8' : '#888' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 12, fill: isDarkMode ? '#94A3B8' : '#888' }} axisLine={false} tickLine={false} tickFormatter={v => `${v / 1000}k`} />
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: isDarkMode ? 'rgba(255,255,255,0.03)' : 'rgba(79,70,229,0.05)' }} />
-                <Bar dataKey="amount" fill="#4F46E5" radius={[4, 4, 0, 0]} animationDuration={800} />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: isDarkMode ? 'rgba(255,255,255,0.03)' : 'rgba(16,185,129,0.05)' }} />
+                <Bar dataKey="amount" fill="#10B981" radius={[4, 4, 0, 0]} animationDuration={800} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -212,9 +212,9 @@ export default function AnalyticsScreen() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-white dark:bg-[#151B2C] border border-[#F0F0F0]/10 rounded-2xl p-5 shadow-card dark:shadow-none mb-5 transition-colors"
+          className="bg-white dark:bg-[#043C31] border border-[#F0F0F0]/10 rounded-2xl p-5 shadow-card dark:shadow-none mb-5 transition-colors"
         >
-          <h3 className="text-lg font-semibold text-[#000] dark:text-white mb-1">Group Spending</h3>
+          <h3 className="text-lg font-semibold text-[#000] dark:text-[#E2E8F0] mb-1">Group Spending</h3>
           <p className="text-xs text-[#888] dark:text-[#94A3B8] mb-4">Compare across your groups</p>
 
           <div className="space-y-3">
@@ -224,10 +224,10 @@ export default function AnalyticsScreen() {
               return (
                 <div key={group.id} className="flex items-center gap-3">
                   <span className="text-sm text-[#333] dark:text-[#E2E8F0] w-28 shrink-0 truncate">{group.name}</span>
-                  <div className="flex-1 h-6 bg-[#F0F0F0] dark:bg-[#1F293D] rounded-full overflow-hidden">
+                  <div className="flex-1 h-6 bg-[#F0F0F0] dark:bg-[#094F40] rounded-full overflow-hidden">
                     <motion.div
                       className="h-full rounded-full"
-                      style={{ background: `linear-gradient(135deg, #4F46E5 0%, #6B4C9A 100%)` }}
+                      style={{ background: `linear-gradient(135deg, #10B981 0%, #0D9488 100%)` }}
                       initial={{ width: 0 }}
                       animate={{ width: `${width}%` }}
                       transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
@@ -247,9 +247,9 @@ export default function AnalyticsScreen() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
-          className="bg-white dark:bg-[#151B2C] border border-[#F0F0F0]/10 rounded-2xl p-5 shadow-card dark:shadow-none pb-8 transition-colors"
+          className="bg-white dark:bg-[#043C31] border border-[#F0F0F0]/10 rounded-2xl p-5 shadow-card dark:shadow-none pb-8 transition-colors"
         >
-          <h3 className="text-lg font-semibold text-[#000] dark:text-white mb-4">Savings Goals Progress</h3>
+          <h3 className="text-lg font-semibold text-[#000] dark:text-[#E2E8F0] mb-4">Savings Goals Progress</h3>
           <div className="space-y-4">
             {savingsGoals.map(goal => (
               <div key={goal.id}>
@@ -259,7 +259,7 @@ export default function AnalyticsScreen() {
                     {Math.round((goal.current / goal.target) * 100)}%
                   </span>
                 </div>
-                <div className="w-full h-2.5 bg-[#F0F0F0] dark:bg-[#1F293D] rounded-full overflow-hidden">
+                <div className="w-full h-2.5 bg-[#F0F0F0] dark:bg-[#094F40] rounded-full overflow-hidden">
                   <motion.div
                     className="h-full rounded-full"
                     style={{ backgroundColor: goal.color }}

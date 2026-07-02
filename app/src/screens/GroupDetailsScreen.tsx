@@ -109,7 +109,7 @@ export default function GroupDetailsScreen() {
   const selectedExpense = group.expenses.find(e => e.id === showExpenseDetail);
 
   return (
-    <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0B0F19] text-[#333] dark:text-[#E2E8F0]">
+    <div className="min-h-screen bg-[#ECFDF5] dark:bg-[#022C22] text-[#333] dark:text-[#E2E8F0]">
       {/* Group Header */}
       <div className="gradient-hero rounded-b-3xl p-5 pt-6 text-white relative overflow-hidden shadow-[0_8px_30px_rgb(79,70,229,0.2)] dark:shadow-none">
         <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
@@ -140,16 +140,16 @@ export default function GroupDetailsScreen() {
       </div>
 
       {/* Quick Actions */}
-      <div className="flex gap-3 px-5 py-4  border-b border-[#F0F0F0] dark:border-[#1F293D] sticky top-16 z-10 transition-colors">
+      <div className="flex gap-3 px-5 py-4  border-b border-[#F0F0F0] dark:border-[#0E6E5A]/40 sticky top-16 z-10 transition-colors">
         <button
           onClick={() => setShowAddExpense(true)}
-          className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#4F46E5] text-white rounded-xl text-sm font-medium shadow-button hover:bg-[#3f38b7] transition-all active:scale-95 cursor-pointer"
+          className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#10B981] text-white rounded-xl text-sm font-medium shadow-button hover:bg-[#059669] transition-all active:scale-95 cursor-pointer"
         >
           <Plus className="w-4 h-4" /> Add Expense
         </button>
         <button
           onClick={() => setShowSettleUp(true)}
-          className="flex-1 flex items-center justify-center gap-2 py-3 border-2 border-[#4F46E5] dark:border-indigo-400 text-[#4F46E5] dark:text-indigo-400 rounded-xl text-sm font-medium hover:bg-[#4F46E5] dark:hover:bg-indigo-600 hover:text-white dark:hover:text-white transition-all active:scale-95 cursor-pointer"
+          className="flex-1 flex items-center justify-center gap-2 py-3 border-2 border-[#10B981] dark:border-emerald-400 text-[#10B981] dark:text-emerald-400 rounded-xl text-sm font-medium hover:bg-[#10B981] dark:hover:bg-emerald-600 hover:text-white dark:hover:text-white transition-all active:scale-95 cursor-pointer"
         >
           <CheckCircle className="w-4 h-4" /> Settle Up
         </button>
@@ -157,9 +157,9 @@ export default function GroupDetailsScreen() {
           type="button"
           aria-label="Share group"
           title="Share group"
-          className="w-11 h-11 flex items-center justify-center rounded-xl bg-[#F5F5F5] dark:bg-[#2A364F] hover:bg-[#E5E5E5] dark:hover:bg-[#34425F] transition-colors active:scale-95 cursor-pointer"
+          className="w-11 h-11 flex items-center justify-center rounded-xl bg-[#F5F5F5] dark:bg-[#085444] hover:bg-[#E5E5E5] dark:hover:bg-[#0E6E5A] transition-colors active:scale-95 cursor-pointer"
         >
-          <Share2 className="w-5 h-5 text-[#4F46E5] dark:text-indigo-400" />
+          <Share2 className="w-5 h-5 text-[#10B981] dark:text-emerald-400" />
         </button>
       </div>
 
@@ -167,7 +167,7 @@ export default function GroupDetailsScreen() {
       <div className="px-5 py-4 space-y-3 pb-24">
         {group.expenses.length === 0 ? (
           <div className="text-center py-12">
-            <div className="w-16 h-16 rounded-full bg-[#F5F5F5] dark:bg-[#151B2C] border border-[#F0F0F0]/10 flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 rounded-full bg-[#F5F5F5] dark:bg-[#043C31] border border-[#F0F0F0]/10 flex items-center justify-center mx-auto mb-4">
               <Receipt className="w-8 h-8 text-[#CCC] dark:text-[#94A3B8]" />
             </div>
             <p className="text-[#888] dark:text-[#94A3B8] text-sm">No expenses yet</p>
@@ -184,9 +184,9 @@ export default function GroupDetailsScreen() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
                 onClick={() => setShowExpenseDetail(expense.id)}
-                className="w-full flex items-center gap-3 p-4 bg-white dark:bg-[#151B2C] border border-[#F0F0F0]/10 rounded-2xl shadow-card dark:shadow-none hover:shadow-card-hover dark:hover:bg-[#1C2437] transition-all text-left active:scale-[0.98] cursor-pointer"
+                className="w-full flex items-center gap-3 p-4 bg-white dark:bg-[#043C31] border border-[#F0F0F0]/10 rounded-2xl shadow-card dark:shadow-none hover:shadow-card-hover dark:hover:bg-[#085444] transition-all text-left active:scale-[0.98] cursor-pointer"
               >
-                <div className="w-10 h-10 rounded-full bg-[rgba(79,70,229,0.08)] dark:bg-[rgba(99,102,241,0.15)] flex items-center justify-center text-[#4F46E5] dark:text-indigo-400 shrink-0">
+                <div className="w-10 h-10 rounded-full bg-[rgba(16,185,129,0.08)] dark:bg-[rgba(52,211,153,0.15)] flex items-center justify-center text-[#10B981] dark:text-emerald-400 shrink-0">
                   {categoryIcons[expense.category] || <Receipt className="w-4 h-4" />}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -194,7 +194,7 @@ export default function GroupDetailsScreen() {
                   <p className="text-xs text-[#888] dark:text-[#94A3B8]">Paid by {expense.paidByName} • {expense.shares.length} shares</p>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="text-sm font-semibold text-[#333] dark:text-white">{formatCurrency(expense.amount, group.currency)}</p>
+                  <p className="text-sm font-semibold text-[#333] dark:text-[#E2E8F0]">{formatCurrency(expense.amount, group.currency)}</p>
                   {myShare && (
                     <p className={`text-xs ${isOwed ? 'text-[#10B981]' : 'text-[#EF4444]'}`}>
                       {isOwed ? 'You lent ' : 'You owe '}{formatCurrency(myShare.amount, group.currency)}
@@ -214,19 +214,19 @@ export default function GroupDetailsScreen() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" onClick={() => setShowAddExpense(false)} />
             <motion.div
-              className="relative bg-white dark:bg-[#151B2C] border-t border-[#F0F0F0]/10 rounded-t-3xl w-full max-w-lg p-6 z-10 max-h-[85vh] overflow-y-auto"
+              className="relative bg-white dark:bg-[#043C31] border-t border-[#F0F0F0]/10 rounded-t-3xl w-full max-w-lg p-6 z-10 max-h-[85vh] overflow-y-auto"
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}>
-              <div className="w-10 h-1 bg-[#E0E0E0] dark:bg-[#2A364F] rounded-full mx-auto mb-6" />
-              <h3 className="text-xl font-semibold text-[#000] dark:text-white mb-4">Add Expense</h3>
+              <div className="w-10 h-1 bg-[#E0E0E0] dark:bg-[#085444] rounded-full mx-auto mb-6" />
+              <h3 className="text-xl font-semibold text-[#000] dark:text-[#E2E8F0] mb-4">Add Expense</h3>
 
               <input type="text" value={expenseDesc} onChange={e => setExpenseDesc(e.target.value)}
-                placeholder="What's this for?" title="Expense description" className="w-full px-4 py-3 bg-transparent dark:text-white border-2 border-[#E0E0E0] dark:border-[#2A364F] rounded-xl text-sm focus:border-[#4F46E5] dark:focus:border-indigo-400 focus:outline-none mb-3 transition-all" />
+                placeholder="What's this for?" title="Expense description" className="w-full px-4 py-3 bg-transparent dark:text-[#E2E8F0] border-2 border-[#E0E0E0] dark:border-[#0E6E5A] rounded-xl text-sm focus:border-[#10B981] dark:focus:border-emerald-400 focus:outline-none mb-3 transition-all" />
 
               <div className="relative mb-3">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-bold text-[#888] dark:text-[#94A3B8]">{formatCurrency(Number(expenseAmount), group.currency).split(' ')[0]}</span>
                 <input type="number" value={expenseAmount} onChange={e => setExpenseAmount(e.target.value)}
-                  placeholder="0.00" title="Expense amount" className="w-full pl-12 pr-4 py-3 text-2xl font-bold bg-transparent dark:text-white border-2 border-[#E0E0E0] dark:border-[#2A364F] rounded-xl focus:border-[#4F46E5] dark:focus:border-indigo-400 focus:outline-none transition-all" />
+                  placeholder="0.00" title="Expense amount" className="w-full pl-12 pr-4 py-3 text-2xl font-bold bg-transparent dark:text-[#E2E8F0] border-2 border-[#E0E0E0] dark:border-[#0E6E5A] rounded-xl focus:border-[#10B981] dark:focus:border-emerald-400 focus:outline-none transition-all" />
               </div>
 
               {/* Paid By */}
@@ -235,7 +235,7 @@ export default function GroupDetailsScreen() {
                 <div className="flex gap-2 overflow-x-auto scrollbar-hide">
                   {group.members.map(m => (
                     <button key={m.id} onClick={() => setExpensePaidBy(m.id)}
-                      className={`px-3 py-2 rounded-full text-xs font-medium shrink-0 transition-all cursor-pointer ${expensePaidBy === m.id ? 'bg-[#4F46E5] text-white' : 'bg-[#F5F5F5] dark:bg-[#2A364F] text-[#333] dark:text-[#E2E8F0] hover:bg-[#E5E5E5] dark:hover:bg-[#34425F]'
+                      className={`px-3 py-2 rounded-full text-xs font-medium shrink-0 transition-all cursor-pointer ${expensePaidBy === m.id ? 'bg-[#10B981] text-white' : 'bg-[#F5F5F5] dark:bg-[#085444] text-[#333] dark:text-[#E2E8F0] hover:bg-[#E5E5E5] dark:hover:bg-[#0E6E5A]'
                         }`}>{m.name}</button>
                   ))}
                 </div>
@@ -247,7 +247,7 @@ export default function GroupDetailsScreen() {
                 <div className="flex gap-2">
                   {splitTypes.map(st => (
                     <button key={st} onClick={() => setSplitType(st)}
-                      className={`flex-1 py-2 rounded-xl text-xs font-medium capitalize transition-all cursor-pointer ${splitType === st ? 'bg-[#4F46E5] text-white shadow-sm' : 'bg-[#F5F5F5] dark:bg-[#2A364F] text-[#888] dark:text-[#94A3B8] hover:bg-[#E5E5E5] dark:hover:bg-[#34425F]'
+                      className={`flex-1 py-2 rounded-xl text-xs font-medium capitalize transition-all cursor-pointer ${splitType === st ? 'bg-[#10B981] text-white shadow-sm' : 'bg-[#F5F5F5] dark:bg-[#085444] text-[#888] dark:text-[#94A3B8] hover:bg-[#E5E5E5] dark:hover:bg-[#0E6E5A]'
                         }`}>{st}</button>
                   ))}
                 </div>
@@ -259,14 +259,14 @@ export default function GroupDetailsScreen() {
                 <div className="flex gap-2 overflow-x-auto scrollbar-hide">
                   {categories.map(cat => (
                     <button key={cat} onClick={() => setExpenseCategory(cat)}
-                      className={`px-3 py-2 rounded-full text-xs font-medium shrink-0 transition-all cursor-pointer ${expenseCategory === cat ? 'bg-[#4F46E5] text-white' : 'bg-[#F5F5F5] dark:bg-[#2A364F] text-[#333] dark:text-[#E2E8F0] hover:bg-[#E5E5E5] dark:hover:bg-[#34425F]'
+                      className={`px-3 py-2 rounded-full text-xs font-medium shrink-0 transition-all cursor-pointer ${expenseCategory === cat ? 'bg-[#10B981] text-white' : 'bg-[#F5F5F5] dark:bg-[#085444] text-[#333] dark:text-[#E2E8F0] hover:bg-[#E5E5E5] dark:hover:bg-[#0E6E5A]'
                         }`}>{cat}</button>
                   ))}
                 </div>
               </div>
 
               <button onClick={handleAddExpense} disabled={!expenseDesc.trim() || !expenseAmount || parseFloat(expenseAmount) <= 0}
-                className="w-full py-4 rounded-xl bg-[#4F46E5] text-white font-semibold shadow-button hover:bg-[#3f38b7] disabled:opacity-50 transition-all cursor-pointer">
+                className="w-full py-4 rounded-xl bg-[#10B981] text-white font-semibold shadow-button hover:bg-[#059669] disabled:opacity-50 transition-all cursor-pointer">
                 Add Expense
               </button>
             </motion.div>
@@ -281,11 +281,11 @@ export default function GroupDetailsScreen() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" onClick={() => setShowSettleUp(false)} />
             <motion.div
-              className="relative bg-white dark:bg-[#151B2C] border-t border-[#F0F0F0]/10 rounded-t-3xl w-full max-w-lg p-6 z-10"
+              className="relative bg-white dark:bg-[#043C31] border-t border-[#F0F0F0]/10 rounded-t-3xl w-full max-w-lg p-6 z-10"
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}>
-              <div className="w-10 h-1 bg-[#E0E0E0] dark:bg-[#2A364F] rounded-full mx-auto mb-6" />
-              <h3 className="text-xl font-semibold text-[#000] dark:text-white mb-4">Settle Up</h3>
+              <div className="w-10 h-1 bg-[#E0E0E0] dark:bg-[#085444] rounded-full mx-auto mb-6" />
+              <h3 className="text-xl font-semibold text-[#000] dark:text-[#E2E8F0] mb-4">Settle Up</h3>
 
               {myBalance !== 0 && (
                 <div className={`text-center p-4 rounded-2xl mb-4 ${myBalance > 0 ? 'bg-[rgba(16,185,129,0.08)] dark:bg-emerald-950/20' : 'bg-[rgba(239,68,68,0.08)] dark:bg-red-950/20'}`}>
@@ -301,7 +301,7 @@ export default function GroupDetailsScreen() {
                 <div className="flex gap-2 overflow-x-auto scrollbar-hide">
                   {balances_list.filter(b => b.memberId !== '1' && b.netBalance < 0).map(b => (
                     <button key={b.memberId} onClick={() => setSettleMember(b.memberId)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium shrink-0 transition-all cursor-pointer ${settleMember === b.memberId ? 'bg-[#4F46E5] text-white' : 'bg-[#F5F5F5] dark:bg-[#2A364F] text-[#333] dark:text-[#E2E8F0] hover:bg-[#E5E5E5] dark:hover:bg-[#34425F]'
+                      className={`px-4 py-2 rounded-full text-sm font-medium shrink-0 transition-all cursor-pointer ${settleMember === b.memberId ? 'bg-[#10B981] text-white' : 'bg-[#F5F5F5] dark:bg-[#085444] text-[#333] dark:text-[#E2E8F0] hover:bg-[#E5E5E5] dark:hover:bg-[#0E6E5A]'
                         }`}>{b.memberName}</button>
                   ))}
                 </div>
@@ -310,11 +310,11 @@ export default function GroupDetailsScreen() {
               <div className="relative mb-6">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-bold text-[#888] dark:text-[#94A3B8]">Rs.</span>
                 <input type="number" value={settleAmount} onChange={e => setSettleAmount(e.target.value)}
-                  placeholder="0.00" title="Settling amount" className="w-full pl-12 pr-4 py-3 text-2xl font-bold bg-transparent dark:text-white border-2 border-[#E0E0E0] dark:border-[#2A364F] rounded-xl focus:border-[#4F46E5] dark:focus:border-indigo-400 focus:outline-none transition-all" />
+                  placeholder="0.00" title="Settling amount" className="w-full pl-12 pr-4 py-3 text-2xl font-bold bg-transparent dark:text-[#E2E8F0] border-2 border-[#E0E0E0] dark:border-[#0E6E5A] rounded-xl focus:border-[#10B981] dark:focus:border-emerald-400 focus:outline-none transition-all" />
               </div>
 
               <button onClick={handleSettleUp} disabled={!settleMember || !settleAmount || parseFloat(settleAmount) <= 0}
-                className="w-full py-4 rounded-xl bg-[#4F46E5] text-white font-semibold shadow-button hover:bg-[#3f38b7] disabled:opacity-50 transition-all cursor-pointer">
+                className="w-full py-4 rounded-xl bg-[#10B981] text-white font-semibold shadow-button hover:bg-[#059669] disabled:opacity-50 transition-all cursor-pointer">
                 Pay {settleAmount ? formatCurrency(parseFloat(settleAmount), group.currency) : 'Rs. 0'}
               </button>
             </motion.div>
@@ -329,29 +329,29 @@ export default function GroupDetailsScreen() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" onClick={() => setShowExpenseDetail(null)} />
             <motion.div
-              className="relative bg-white dark:bg-[#151B2C] border-t border-[#F0F0F0]/10 rounded-t-3xl w-full max-w-lg p-6 z-10 max-h-[80vh] overflow-y-auto"
+              className="relative bg-white dark:bg-[#043C31] border-t border-[#F0F0F0]/10 rounded-t-3xl w-full max-w-lg p-6 z-10 max-h-[80vh] overflow-y-auto"
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}>
-              <div className="w-10 h-1 bg-[#E0E0E0] dark:bg-[#2A364F] rounded-full mx-auto mb-6" />
+              <div className="w-10 h-1 bg-[#E0E0E0] dark:bg-[#085444] rounded-full mx-auto mb-6" />
 
               <div className="text-center mb-4">
-                <p className="text-3xl font-bold text-[#000] dark:text-white">{formatCurrency(selectedExpense.amount, group.currency)}</p>
+                <p className="text-3xl font-bold text-[#000] dark:text-[#E2E8F0]">{formatCurrency(selectedExpense.amount, group.currency)}</p>
                 <p className="text-sm text-[#888] dark:text-[#94A3B8] mt-1">{formatDate(selectedExpense.date)}</p>
-                <span className="inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium bg-[rgba(79,70,229,0.1)] dark:bg-[rgba(99,102,241,0.15)] text-[#4F46E5] dark:text-indigo-400">
+                <span className="inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium bg-[rgba(16,185,129,0.1)] dark:bg-[rgba(52,211,153,0.15)] text-[#10B981] dark:text-emerald-400">
                   {selectedExpense.category}
                 </span>
               </div>
 
-              <p className="text-lg font-semibold text-[#000] dark:text-white mb-1">{selectedExpense.description}</p>
+              <p className="text-lg font-semibold text-[#000] dark:text-[#E2E8F0] mb-1">{selectedExpense.description}</p>
               <p className="text-sm text-[#888] dark:text-[#94A3B8] mb-4">Paid by {selectedExpense.paidByName}</p>
 
-              <h4 className="text-sm font-semibold text-[#333] dark:text-white mb-2">Split Details</h4>
+              <h4 className="text-sm font-semibold text-[#333] dark:text-[#E2E8F0] mb-2">Split Details</h4>
               <div className="space-y-2 mb-4">
                 {selectedExpense.shares.map(share => {
                   const isMe = share.memberId === '1';
                   return (
-                    <div key={share.memberId} className="flex items-center justify-between p-3 bg-[#F8F8F8] dark:bg-[#1C2437] border border-[#F0F0F0]/5 rounded-xl">
-                      <span className={`text-sm ${isMe ? 'font-semibold text-[#4F46E5] dark:text-indigo-400' : 'text-[#333] dark:text-[#E2E8F0]'}`}>
+                    <div key={share.memberId} className="flex items-center justify-between p-3 bg-[#ECFDF5] dark:bg-[#094F40] border border-[#F0F0F0]/5 rounded-xl">
+                      <span className={`text-sm ${isMe ? 'font-semibold text-[#10B981] dark:text-emerald-400' : 'text-[#333] dark:text-[#E2E8F0]'}`}>
                         {share.memberName} {isMe && '(You)'}
                       </span>
                       <span className="text-sm font-medium text-[#333] dark:text-[#E2E8F0]">{formatCurrency(share.amount, group.currency)}</span>

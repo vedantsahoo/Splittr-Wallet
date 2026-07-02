@@ -18,7 +18,7 @@ const initialGroups: Group[] = [
     id: '1',
     name: 'Flatmates',
     icon: '🏠',
-    color: '#4F46E5',
+    color: '#10B981',
     currency: 'INR',
     members: [
       { id: '1', name: 'You', initials: 'VS', balance: 1250 },

@@ -15,9 +15,9 @@ Splittr is a modern, premium digital wallet and split bill application built wit
 
 - **Framework:** React 19 + TypeScript + Vite
 - **Styling:** Tailwind CSS v4 with `@tailwindcss/vite` plugin (no PostCSS configuration needed)
-- **State Management:** Zustand (Global Client State) & `@tanstack/react-query` (Server Cache/Exchange Rates)
-- **Animations:** Framer Motion (Page transitions, Spring physics) & GSAP (Scroll triggers, chart entries)
-- **Charts:** Recharts
+- **State Management:** Zustand (Global Client State & LocalStorage Persistence). React Query is configured at the root but not active in screens.
+- **Animations:** Framer Motion (Page transitions, Spring sheet physics, modal overlay entries, and progress bar fills)
+- **Charts:** Recharts (with built-in SVG transitions)
 - **Icons:** Lucide React
 
 ## Getting Started

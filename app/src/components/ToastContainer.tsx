@@ -18,7 +18,7 @@ export default function ToastContainer() {
             className="pointer-events-auto flex items-start gap-3 bg-white rounded-xl px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.1)] border-l-4 min-w-[280px] max-w-[360px]"
             style={{
               borderLeftColor:
-                toast.type === 'success' ? '#10B981' : toast.type === 'error' ? '#EF4444' : '#4F46E5',
+                toast.type === 'success' ? '#10B981' : toast.type === 'error' ? '#EF4444' : '#10B981',
             }}
           >
             {toast.type === 'success' ? (
@@ -26,7 +26,7 @@ export default function ToastContainer() {
             ) : toast.type === 'error' ? (
               <AlertCircle className="w-5 h-5 text-[#EF4444] shrink-0 mt-0.5" />
             ) : (
-              <Info className="w-5 h-5 text-[#4F46E5] shrink-0 mt-0.5" />
+              <Info className="w-5 h-5 text-[#10B981] shrink-0 mt-0.5" />
             )}
             <p className="text-sm text-[#333] flex-1">{toast.message}</p>
             <button

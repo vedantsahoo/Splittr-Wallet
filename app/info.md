@@ -1,8 +1,8 @@
-Using Node.js 20, Tailwind CSS v4.3.1, and Vite v7.2.4+
+Using Node.js 20, Tailwind CSS v4.3.1, and Vite v8.1.0+
 
 Tailwind CSS has been set up with the `@tailwindcss/vite` integration (Vite Plugin).
 
-Setup complete: /mnt/agents/output/app
+Setup complete: ./app
 
 Components (40+):
   accordion, alert-dialog, alert, aspect-ratio, avatar, badge, breadcrumb,
@@ -13,9 +13,7 @@ Components (40+):
   scroll-area, select, separator, sheet, sidebar, skeleton, slider, sonner,
   spinner, switch, table, tabs, textarea, toggle-group, toggle, tooltip
 
-Usage:
-  import { Button } from '@/components/ui/button'
-  import { Card, CardHeader, CardTitle } from '@/components/ui/card'
+Note: While shadcn UI components are installed in `src/components/ui/`, they are currently not imported or used by the main app screens. The screens are styled directly using custom inline Tailwind utility classes.
 
 Structure:
   src/sections/        Page sections

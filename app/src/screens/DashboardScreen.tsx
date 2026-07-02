@@ -35,8 +35,8 @@ function TransactionItem({ tx }: { tx: Transaction }) {
   const prefix = isPositive ? '+' : isNegative ? '-' : '';
 
   return (
-    <div className="flex items-center gap-3 py-3 px-1 hover:bg-[rgba(79,70,229,0.03)] dark:hover:bg-[rgba(99,102,241,0.05)] rounded-xl transition-colors cursor-pointer">
-      <div className="w-10 h-10 rounded-full bg-[rgba(79,70,229,0.08)] dark:bg-[rgba(99,102,241,0.15)] flex items-center justify-center text-[#4F46E5] dark:text-indigo-400 shrink-0">
+    <div className="flex items-center gap-3 py-3 px-1 hover:bg-[rgba(16,185,129,0.03)] dark:hover:bg-[rgba(52,211,153,0.05)] rounded-xl transition-colors cursor-pointer">
+      <div className="w-10 h-10 rounded-full bg-[rgba(16,185,129,0.08)] dark:bg-[rgba(52,211,153,0.15)] flex items-center justify-center text-[#10B981] dark:text-emerald-400 shrink-0">
         {tx.userAvatar ? (
           <span className="text-sm font-semibold">{tx.userAvatar}</span>
         ) : (
@@ -79,11 +79,11 @@ export default function DashboardScreen() {
                   key={b.currency}
                   onClick={() => useWalletStore.getState().setCurrency(b.currency)}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${selectedCurrency === b.currency
-                    ? 'bg-white text-[#4F46E5]'
+                    ? 'bg-white text-[#10B981]'
                     : 'bg-white/20 text-white hover:bg-white/30'
                     }`}
                 >
-                  {b.currency} {b.symbol}
+                  {b.flag} {b.currency} {b.symbol}
                 </button>
               ))}
             </div>
@@ -93,15 +93,15 @@ export default function DashboardScreen() {
         {/* Quick Actions */}
         <motion.div variants={item} className="grid grid-cols-4 gap-3 mt-5">
           {[
-            { icon: Send, label: 'Send', path: '/send', color: '#4F46E5' },
+            { icon: Send, label: 'Send', path: '/send', color: '#10B981' },
             { icon: Wallet, label: 'Add Money', path: '/wallet', color: '#10B981' },
             { icon: Users, label: 'Split Bill', path: '/groups', color: '#F59E0B' },
-            { icon: TrendingUp, label: 'Analytics', path: '/analytics', color: '#6B4C9A' },
+            { icon: TrendingUp, label: 'Analytics', path: '/analytics', color: '#0D9488' },
           ].map((action) => (
             <button
               key={action.label}
               onClick={() => navigate(action.path)}
-              className="flex flex-col items-center gap-2 py-3 rounded-2xl bg-white dark:bg-[#151B2C] border border-[#F0F0F0]/10 shadow-card dark:shadow-none hover:shadow-card-hover dark:hover:bg-[#1C2437] transition-all active:scale-95 cursor-pointer"
+              className="flex flex-col items-center gap-2 py-3 rounded-2xl bg-white dark:bg-[#043C31] border border-[#F0F0F0]/10 shadow-card dark:shadow-none hover:shadow-card-hover dark:hover:bg-[#085444] transition-all active:scale-95 cursor-pointer"
             >
               <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${action.color}15` }}>
                 <action.icon className="w-5 h-5" style={{ color: action.color }} />
@@ -114,12 +114,12 @@ export default function DashboardScreen() {
         {/* Recent Transactions */}
         <motion.div variants={item} className="mt-6">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold text-black dark:text-white">Recent Transactions</h3>
-            <button onClick={() => navigate('/wallet')} className="text-sm text-[#4F46E5] dark:text-indigo-400 font-medium flex items-center gap-1">
+            <h3 className="text-lg font-semibold text-black dark:text-[#E2E8F0]">Recent Transactions</h3>
+            <button onClick={() => navigate('/wallet')} className="text-sm text-[#10B981] dark:text-emerald-400 font-medium flex items-center gap-1">
               View All <ArrowRight className="w-4 h-4" />
             </button>
           </div>
-          <div className="bg-white dark:bg-[#151B2C] border border-[#F0F0F0]/10 rounded-2xl p-4 shadow-card dark:shadow-none transition-colors">
+          <div className="bg-white dark:bg-[#043C31] border border-[#F0F0F0]/10 rounded-2xl p-4 shadow-card dark:shadow-none transition-colors">
             {recentTransactions.map(tx => (
               <TransactionItem key={tx.id} tx={tx} />
             ))}
@@ -129,8 +129,8 @@ export default function DashboardScreen() {
         {/* Groups Preview */}
         <motion.div variants={item} className="mt-6">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold text-black dark:text-white">Your Groups</h3>
-            <button onClick={() => navigate('/groups')} className="text-sm text-[#4F46E5] dark:text-indigo-400 font-medium flex items-center gap-1">
+            <h3 className="text-lg font-semibold text-black dark:text-[#E2E8F0]">Your Groups</h3>
+            <button onClick={() => navigate('/groups')} className="text-sm text-[#10B981] dark:text-emerald-400 font-medium flex items-center gap-1">
               View All <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -139,7 +139,7 @@ export default function DashboardScreen() {
               <button
                 key={group.id}
                 onClick={() => navigate(`/groups/${group.id}`)}
-                className="snap-start shrink-0 w-36 bg-white dark:bg-[#151B2C] border border-[#F0F0F0]/10 rounded-2xl p-4 shadow-card dark:shadow-none hover:shadow-card-hover dark:hover:bg-[#1C2437] transition-all text-left active:scale-95 cursor-pointer"
+                className="snap-start shrink-0 w-36 bg-white dark:bg-[#043C31] border border-[#F0F0F0]/10 rounded-2xl p-4 shadow-card dark:shadow-none hover:shadow-card-hover dark:hover:bg-[#085444] transition-all text-left active:scale-95 cursor-pointer"
               >
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl mb-2" style={{ backgroundColor: `${group.color}15` }}>
                   {group.icon}
@@ -153,9 +153,9 @@ export default function DashboardScreen() {
             ))}
             <button
               onClick={() => navigate('/groups')}
-              className="snap-start shrink-0 w-36 rounded-2xl p-4 border-2 border-dashed border-[#E0E0E0] dark:border-[#2A364F] flex flex-col items-center justify-center gap-2 hover:border-[#4F46E5] dark:hover:border-indigo-400 transition-colors active:scale-95 cursor-pointer"
+              className="snap-start shrink-0 w-36 rounded-2xl p-4 border-2 border-dashed border-[#E0E0E0] dark:border-[#0E6E5A] flex flex-col items-center justify-center gap-2 hover:border-[#10B981] dark:hover:border-emerald-400 transition-colors active:scale-95 cursor-pointer"
             >
-              <div className="w-10 h-10 rounded-xl bg-[#F5F5F5] dark:bg-[#1C2437] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-[#F5F5F5] dark:bg-[#094F40] flex items-center justify-center">
                 <Plus className="w-5 h-5 text-[#888] dark:text-[#94A3B8]" />
               </div>
               <span className="text-xs font-medium text-[#888] dark:text-[#94A3B8]">New Group</span>
@@ -166,19 +166,19 @@ export default function DashboardScreen() {
         {/* Savings Goals (TODO: implement) */}
         <motion.div variants={item} className="mt-6 pb-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold text-black dark:text-white">Savings Goals</h3>
-            <button className="text-sm text-[#4F46E5] dark:text-indigo-400 font-medium">View All</button>
+            <h3 className="text-lg font-semibold text-black dark:text-[#E2E8F0]">Savings Goals</h3>
+            <button className="text-sm text-[#10B981] dark:text-emerald-400 font-medium">View All</button>
           </div>
           <div className="space-y-3">
             {savingsGoals.map(goal => (
-              <div key={goal.id} className="bg-white dark:bg-[#151B2C] border border-[#F0F0F0]/10 rounded-2xl p-4 shadow-card dark:shadow-none transition-colors">
+              <div key={goal.id} className="bg-white dark:bg-[#043C31] border border-[#F0F0F0]/10 rounded-2xl p-4 shadow-card dark:shadow-none transition-colors">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-[#333] dark:text-[#E2E8F0]">{goal.name}</span>
                   <span className="text-xs font-medium" style={{ color: goal.color }}>
                     {Math.round((goal.current / goal.target) * 100)}%
                   </span>
                 </div>
-                <div className="w-full h-2 bg-[#F0F0F0] dark:bg-[#1F293D] rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-[#F0F0F0] dark:bg-[#094F40] rounded-full overflow-hidden">
                   <motion.div
                     className="h-full rounded-full"
                     style={{ backgroundColor: goal.color }}

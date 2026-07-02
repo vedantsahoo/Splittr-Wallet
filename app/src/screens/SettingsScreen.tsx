@@ -24,7 +24,7 @@ function SettingItem({ icon, title, subtitle, right, onClick, danger }: SettingI
   const containerClasses = "w-full flex items-center gap-3 py-3.5 text-left rounded-xl px-1 transition-colors";
   const content = (
     <>
-      <div className="w-10 h-10 rounded-xl bg-[rgba(79,70,229,0.08)] dark:bg-[rgba(99,102,241,0.15)] flex items-center justify-center shrink-0">
+      <div className="w-10 h-10 rounded-xl bg-[rgba(16,185,129,0.08)] dark:bg-[rgba(52,211,153,0.15)] flex items-center justify-center shrink-0">
         {icon}
       </div>
       <div className="flex-1 min-w-0">
@@ -39,7 +39,7 @@ function SettingItem({ icon, title, subtitle, right, onClick, danger }: SettingI
     return (
       <button
         onClick={onClick}
-        className={`${containerClasses} hover:bg-[rgba(79,70,229,0.03)] dark:hover:bg-[rgba(99,102,241,0.05)] cursor-pointer`}
+        className={`${containerClasses} hover:bg-[rgba(16,185,129,0.03)] dark:hover:bg-[rgba(52,211,153,0.05)] cursor-pointer`}
       >
         {content}
       </button>
@@ -91,17 +91,17 @@ export default function SettingsScreen() {
         <p className="text-sm text-[#888] dark:text-[#94A3B8] mb-6">Manage your account and preferences</p>
 
         {/* Profile Card */}
-        <div className="bg-white dark:bg-[#151B2C] border border-[#F0F0F0]/10 rounded-2xl p-5 shadow-card dark:shadow-none mb-5 transition-colors">
+        <div className="bg-white dark:bg-[#043C31] border border-[#F0F0F0]/10 rounded-2xl p-5 shadow-card dark:shadow-none mb-5 transition-colors">
           <div className="flex items-center gap-4">
             <div className="relative">
-              <div className="w-20 h-20 rounded-full bg-[#4F46E5] flex items-center justify-center text-white text-lg font-bold">
+              <div className="w-20 h-20 rounded-full bg-[#10B981] flex items-center justify-center text-white text-lg font-bold">
                 {user?.avatar ? (<img src={user.avatar} alt={user.name} className="w-full h-full object-cover rounded-full" />) : (user?.name.split(' ').map(n => n[0]).join(''))}
               </div>
               <button
                 onClick={() => { setEditName(user?.name || ''); setShowEditProfile(true); }}
                 title="Edit profile"
                 aria-label="Edit profile"
-                className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#4F46E5] flex items-center justify-center border-2 border-white dark:border-[#151B2C]"
+                className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#10B981] flex items-center justify-center border-2 border-white dark:border-[#043C31]"
               >
                 <Edit className="w-3 h-3 text-white" />
               </button>
@@ -110,7 +110,7 @@ export default function SettingsScreen() {
               <p className="text-lg font-semibold text-black dark:text-white">{user?.name}</p>
               <p className="text-sm text-[#888] dark:text-[#94A3B8]">{user?.email}</p>
               <p className="text-xs text-[#888] dark:text-[#94A3B8]">{user?.phone}</p>
-              <button className="text-xs text-[#4F46E5] dark:text-indigo-400 font-medium mt-1 flex items-center gap-1">
+              <button className="text-xs text-[#10B981] dark:text-emerald-400 font-medium mt-1 flex items-center gap-1">
                 <span>Wallet ID: {user?.walletId}</span>
               </button>
             </div>
@@ -119,9 +119,9 @@ export default function SettingsScreen() {
 
         {/* Security */}
         <p className="text-xs font-medium text-[#888] dark:text-[#94A3B8] uppercase tracking-wider px-1 mb-2">Security</p>
-        <div className="bg-white dark:bg-[#151B2C] border border-[#F0F0F0]/10 rounded-2xl p-4 px-5 shadow-card dark:shadow-none mb-5 transition-colors">
+        <div className="bg-white dark:bg-[#043C31] border border-[#F0F0F0]/10 rounded-2xl p-4 px-5 shadow-card dark:shadow-none mb-5 transition-colors">
           <SettingItem
-            icon={<Shield className="w-5 h-5 text-[#4F46E5] dark:text-indigo-400" />}
+            icon={<Shield className="w-5 h-5 text-[#10B981] dark:text-emerald-400" />}
             title="Two-Factor Authentication"
             subtitle="Add an extra layer of security"
             right={
@@ -129,31 +129,31 @@ export default function SettingsScreen() {
                 onClick={(e) => { e.stopPropagation(); setTwoFA(!twoFA); }}
                 title={twoFA ? 'Disable two-factor authentication' : 'Enable two-factor authentication'}
                 aria-label={twoFA ? 'Disable two-factor authentication' : 'Enable two-factor authentication'}
-                className={`w-11 h-6 rounded-full transition-all relative ${twoFA ? 'bg-[#4F46E5]' : 'bg-[#E0E0E0] dark:bg-[#2A364F]'}`}
+                className={`w-11 h-6 rounded-full transition-all relative ${twoFA ? 'bg-[#10B981]' : 'bg-[#E0E0E0] dark:bg-[#0E6E5A]'}`}
               >
                 <div className={`w-5 h-5 rounded-full bg-white shadow absolute top-0.5 transition-all ${twoFA ? 'left-[22px]' : 'left-0.5'}`} />
               </button>
             }
           />
-          <div className="h-px bg-[#F0F0F0] dark:bg-[#1F293D] mx-1" />
-          <SettingItem icon={<Lock className="w-5 h-5 text-[#4F46E5] dark:text-indigo-400" />} title="Change Password" subtitle="Last changed 2 months ago" />
-          <div className="h-px bg-[#F0F0F0] dark:bg-[#1F293D] mx-1" />
-          <SettingItem icon={<Gauge className="w-5 h-5 text-[#4F46E5] dark:text-indigo-400" />} title="Daily Transfer Limit" subtitle="Current: Rs. 50,000" />
-          <div className="h-px bg-[#F0F0F0] dark:bg-[#1F293D] mx-1" />
-          <SettingItem icon={<Monitor className="w-5 h-5 text-[#4F46E5] dark:text-indigo-400" />} title="Login Activity" subtitle="View active sessions" />
+          <div className="h-px bg-[#F0F0F0] dark:bg-[#094F40] mx-1" />
+          <SettingItem icon={<Lock className="w-5 h-5 text-[#10B981] dark:text-emerald-400" />} title="Change Password" subtitle="Last changed 2 months ago" />
+          <div className="h-px bg-[#F0F0F0] dark:bg-[#094F40] mx-1" />
+          <SettingItem icon={<Gauge className="w-5 h-5 text-[#10B981] dark:text-emerald-400" />} title="Daily Transfer Limit" subtitle="Current: Rs. 50,000" />
+          <div className="h-px bg-[#F0F0F0] dark:bg-[#094F40] mx-1" />
+          <SettingItem icon={<Monitor className="w-5 h-5 text-[#10B981] dark:text-emerald-400" />} title="Login Activity" subtitle="View active sessions" />
         </div>
 
         {/* Preferences */}
         <p className="text-xs font-medium text-[#888] dark:text-[#94A3B8] uppercase tracking-wider px-1 mb-2">Preferences</p>
-        <div className="bg-white dark:bg-[#151B2C] border border-[#F0F0F0]/10 rounded-2xl p-4 px-5 shadow-card dark:shadow-none mb-5 transition-colors">
+        <div className="bg-white dark:bg-[#043C31] border border-[#F0F0F0]/10 rounded-2xl p-4 px-5 shadow-card dark:shadow-none mb-5 transition-colors">
           <SettingItem
-            icon={<Globe className="w-5 h-5 text-[#4F46E5] dark:text-indigo-400" />}
+            icon={<Globe className="w-5 h-5 text-[#10B981] dark:text-emerald-400" />}
             title="Default Currency"
             right={
               <div className="relative">
                 <button
                   onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-linear-to-r from-[#4F46E5] to-[#6B4C9A] text-white text-xs font-medium"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-linear-to-r from-[#10B981] to-[#0D9488] text-white text-xs font-medium"
                 >
                   {currencies.find(c => c.code === selectedCurrency)?.flag} {selectedCurrency}
                 </button>
@@ -163,13 +163,13 @@ export default function SettingsScreen() {
                       initial={{ opacity: 0, y: -5 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -5 }}
-                      className="absolute right-0 top-full mt-1 bg-white dark:bg-[#1C2437] rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.1)] dark:shadow-none border border-[#F0F0F0] dark:border-[#2A364F] py-1 z-10 w-48 overflow-hidden"
+                      className="absolute right-0 top-full mt-1 bg-white dark:bg-[#085444] rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.1)] dark:shadow-none border border-[#F0F0F0] dark:border-[#0E6E5A] py-1 z-10 w-48 overflow-hidden"
                     >
                       {currencies.map(c => (
                         <button
                           key={c.code}
                           onClick={() => { setSelectedCurrency(c.code); setShowCurrencyDropdown(false); showToast('success', `Currency changed to ${c.code}`); }}
-                          className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[#F8F8F8] dark:hover:bg-[#2A364F] transition-colors ${selectedCurrency === c.code ? 'text-[#4F46E5] dark:text-indigo-400 bg-[rgba(79,70,229,0.05)] dark:bg-[rgba(99,102,241,0.1)]' : 'text-[#333] dark:text-[#E2E8F0]'}`}
+                          className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[#ECFDF5] dark:hover:bg-[#0E6E5A] transition-colors ${selectedCurrency === c.code ? 'text-[#10B981] dark:text-emerald-400 bg-[rgba(16,185,129,0.05)] dark:bg-[rgba(52,211,153,0.1)]' : 'text-[#333] dark:text-[#E2E8F0]'}`}
                         >
                           <span>{c.flag}</span>
                           <span>{c.name}</span>
@@ -182,11 +182,11 @@ export default function SettingsScreen() {
               </div>
             }
           />
-          <div className="h-px bg-[#F0F0F0] dark:bg-[#1F293D] mx-1" />
-          <SettingItem icon={<Globe className="w-5 h-5 text-[#4F46E5] dark:text-indigo-400" />} title="Language" right={<span className="text-sm text-[#888] dark:text-[#94A3B8]">English</span>} />
-          <div className="h-px bg-[#F0F0F0] dark:bg-[#1F293D] mx-1" />
+          <div className="h-px bg-[#F0F0F0] dark:bg-[#094F40] mx-1" />
+          <SettingItem icon={<Globe className="w-5 h-5 text-[#10B981] dark:text-emerald-400" />} title="Language" right={<span className="text-sm text-[#888] dark:text-[#94A3B8]">English</span>} />
+          <div className="h-px bg-[#F0F0F0] dark:bg-[#094F40] mx-1" />
           <SettingItem
-            icon={<Bell className="w-5 h-5 text-[#4F46E5] dark:text-indigo-400" />}
+            icon={<Bell className="w-5 h-5 text-[#10B981] dark:text-emerald-400" />}
             title="Push Notifications"
             subtitle="Expense alerts and reminders"
             right={
@@ -194,30 +194,30 @@ export default function SettingsScreen() {
                 onClick={(e) => { e.stopPropagation(); setNotifications(!notifications); }}
                 title={notifications ? 'Disable push notifications' : 'Enable push notifications'}
                 aria-label={notifications ? 'Disable push notifications' : 'Enable push notifications'}
-                className={`w-11 h-6 rounded-full transition-all relative ${notifications ? 'bg-[#4F46E5]' : 'bg-[#E0E0E0] dark:bg-[#2A364F]'}`}
+                className={`w-11 h-6 rounded-full transition-all relative ${notifications ? 'bg-[#10B981]' : 'bg-[#E0E0E0] dark:bg-[#0E6E5A]'}`}
               >
                 <div className={`w-5 h-5 rounded-full bg-white shadow absolute top-0.5 transition-all ${notifications ? 'left-[22px]' : 'left-0.5'}`} />
               </button>
             }
           />
-          <div className="h-px bg-[#F0F0F0] dark:bg-[#1F293D] mx-1" />
+          <div className="h-px bg-[#F0F0F0] dark:bg-[#094F40] mx-1" />
           <SettingItem
-            icon={<Volume2 className="w-5 h-5 text-[#4F46E5] dark:text-indigo-400" />}
+            icon={<Volume2 className="w-5 h-5 text-[#10B981] dark:text-emerald-400" />}
             title="Sound Effects"
             right={
               <button
                 onClick={(e) => { e.stopPropagation(); setSoundEffects(!soundEffects); }}
                 title={soundEffects ? 'Disable sound effects' : 'Enable sound effects'}
                 aria-label={soundEffects ? 'Disable sound effects' : 'Enable sound effects'}
-                className={`w-11 h-6 rounded-full transition-all relative ${soundEffects ? 'bg-[#4F46E5]' : 'bg-[#E0E0E0] dark:bg-[#2A364F]'}`}
+                className={`w-11 h-6 rounded-full transition-all relative ${soundEffects ? 'bg-[#10B981]' : 'bg-[#E0E0E0] dark:bg-[#0E6E5A]'}`}
               >
                 <div className={`w-5 h-5 rounded-full bg-white shadow absolute top-0.5 transition-all ${soundEffects ? 'left-[22px]' : 'left-0.5'}`} />
               </button>
             }
           />
-          <div className="h-px bg-[#F0F0F0] dark:bg-[#1F293D] mx-1" />
+          <div className="h-px bg-[#F0F0F0] dark:bg-[#094F40] mx-1" />
           <SettingItem
-            icon={<Moon className="w-5 h-5 text-[#4F46E5] dark:text-indigo-400" />}
+            icon={<Moon className="w-5 h-5 text-[#10B981] dark:text-emerald-400" />}
             title="Dark Mode"
             subtitle="Switch between light and dark themes"
             right={
@@ -225,7 +225,7 @@ export default function SettingsScreen() {
                 onClick={(e) => { e.stopPropagation(); toggleDarkMode(); }}
                 title={isDarkMode ? 'Disable dark mode' : 'Enable dark mode'}
                 aria-label={isDarkMode ? 'Disable dark mode' : 'Enable dark mode'}
-                className={`w-11 h-6 rounded-full transition-all relative ${isDarkMode ? 'bg-[#4F46E5]' : 'bg-[#E0E0E0] dark:bg-[#2A364F]'}`}
+                className={`w-11 h-6 rounded-full transition-all relative ${isDarkMode ? 'bg-[#10B981]' : 'bg-[#E0E0E0] dark:bg-[#0E6E5A]'}`}
               >
                 <div className={`w-5 h-5 rounded-full bg-white shadow absolute top-0.5 transition-all ${isDarkMode ? 'left-[22px]' : 'left-0.5'}`} />
               </button>
@@ -235,29 +235,29 @@ export default function SettingsScreen() {
 
         {/* Payment Methods */}
         <p className="text-xs font-medium text-[#888] dark:text-[#94A3B8] uppercase tracking-wider px-1 mb-2">Payment Methods</p>
-        <div className="bg-white dark:bg-[#151B2C] border border-[#F0F0F0]/10 rounded-2xl p-4 px-5 shadow-card dark:shadow-none mb-5 transition-colors">
-          <SettingItem icon={<CreditCard className="w-5 h-5 text-[#4F46E5] dark:text-indigo-400" />} title="UPI IDs" subtitle="2 linked" />
-          <div className="h-px bg-[#F0F0F0] dark:bg-[#1F293D] mx-1" />
+        <div className="bg-white dark:bg-[#043C31] border border-[#F0F0F0]/10 rounded-2xl p-4 px-5 shadow-card dark:shadow-none mb-5 transition-colors">
+          <SettingItem icon={<CreditCard className="w-5 h-5 text-[#10B981] dark:text-emerald-400" />} title="UPI IDs" subtitle="2 linked" />
+          <div className="h-px bg-[#F0F0F0] dark:bg-[#094F40] mx-1" />
           <SettingItem icon={<CreditCard className="w-5 h-5 text-[#10B981]" />} title="Linked Cards" subtitle="1 card linked" />
-          <div className="h-px bg-[#F0F0F0] dark:bg-[#1F293D] mx-1" />
+          <div className="h-px bg-[#F0F0F0] dark:bg-[#094F40] mx-1" />
           <SettingItem icon={<Landmark className="w-5 h-5 text-[#F59E0B]" />} title="Bank Accounts" subtitle="For withdrawals" />
         </div>
 
         {/* Data & Privacy */}
         <p className="text-xs font-medium text-[#888] dark:text-[#94A3B8] uppercase tracking-wider px-1 mb-2">Data & Privacy</p>
-        <div className="bg-white dark:bg-[#151B2C] border border-[#F0F0F0]/10 rounded-2xl p-4 px-5 shadow-card dark:shadow-none mb-5 transition-colors">
-          <SettingItem icon={<Download className="w-5 h-5 text-[#4F46E5] dark:text-indigo-400" />} title="Export Transaction Data" subtitle="CSV or PDF format" />
-          <div className="h-px bg-[#F0F0F0] dark:bg-[#1F293D] mx-1" />
-          <SettingItem icon={<FileText className="w-5 h-5 text-[#4F46E5] dark:text-indigo-400" />} title="Privacy Policy" right={<ExternalLink className="w-4 h-4 text-[#888] dark:text-[#94A3B8]" />} />
-          <div className="h-px bg-[#F0F0F0] dark:bg-[#1F293D] mx-1" />
-          <SettingItem icon={<FileText className="w-5 h-5 text-[#4F46E5] dark:text-indigo-400" />} title="Terms of Service" right={<ExternalLink className="w-4 h-4 text-[#888] dark:text-[#94A3B8]" />} />
+        <div className="bg-white dark:bg-[#043C31] border border-[#F0F0F0]/10 rounded-2xl p-4 px-5 shadow-card dark:shadow-none mb-5 transition-colors">
+          <SettingItem icon={<Download className="w-5 h-5 text-[#10B981] dark:text-emerald-400" />} title="Export Transaction Data" subtitle="CSV or PDF format" />
+          <div className="h-px bg-[#F0F0F0] dark:bg-[#094F40] mx-1" />
+          <SettingItem icon={<FileText className="w-5 h-5 text-[#10B981] dark:text-emerald-400" />} title="Privacy Policy" right={<ExternalLink className="w-4 h-4 text-[#888] dark:text-[#94A3B8]" />} />
+          <div className="h-px bg-[#F0F0F0] dark:bg-[#094F40] mx-1" />
+          <SettingItem icon={<FileText className="w-5 h-5 text-[#10B981] dark:text-emerald-400" />} title="Terms of Service" right={<ExternalLink className="w-4 h-4 text-[#888] dark:text-[#94A3B8]" />} />
         </div>
 
         {/* About */}
         <p className="text-xs font-medium text-[#888] dark:text-[#94A3B8] uppercase tracking-wider px-1 mb-2">About</p>
-        <div className="bg-white dark:bg-[#151B2C] border border-[#F0F0F0]/10 rounded-2xl p-4 px-5 shadow-card dark:shadow-none mb-8 transition-colors">
+        <div className="bg-white dark:bg-[#043C31] border border-[#F0F0F0]/10 rounded-2xl p-4 px-5 shadow-card dark:shadow-none mb-8 transition-colors">
           <div className="flex items-center gap-3 py-3.5">
-            <div className="w-10 h-10 rounded-xl bg-[rgba(136,136,136,0.08)] dark:bg-slate-800 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-[#F0F0F0] dark:bg-[#094F40] flex items-center justify-center shrink-0">
               <Info className="w-5 h-5 text-[#888] dark:text-[#94A3B8]" />
             </div>
             <div className="flex-1">
@@ -265,16 +265,16 @@ export default function SettingsScreen() {
             </div>
             <span className="text-sm text-[#888] dark:text-[#94A3B8]">1.0.0</span>
           </div>
-          <div className="h-px bg-[#F0F0F0] dark:bg-[#1F293D] mx-1" />
-          <SettingItem icon={<HelpCircle className="w-5 h-5 text-[#4F46E5] dark:text-indigo-400" />} title="Help & Support" />
-          <div className="h-px bg-[#F0F0F0] dark:bg-[#1F293D] mx-1" />
+          <div className="h-px bg-[#F0F0F0] dark:bg-[#094F40] mx-1" />
+          <SettingItem icon={<HelpCircle className="w-5 h-5 text-[#10B981] dark:text-emerald-400" />} title="Help & Support" />
+          <div className="h-px bg-[#F0F0F0] dark:bg-[#094F40] mx-1" />
           <SettingItem icon={<Star className="w-5 h-5 text-[#F59E0B]" />} title="Rate Splittr" />
         </div>
 
         {/* Logout */}
         <button
           onClick={() => setShowLogoutConfirm(true)}
-          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-[#FEE2E2] dark:bg-red-950/30 text-[#EF4444] font-medium hover:bg-[#FECACA] dark:hover:bg-red-900/40 transition-all active:scale-[0.98]"
+          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-red-600/80 text-[#e6e6e6] font-medium hover:bg-[#ffa9a9] dark:hover:bg-red-500/40 transition-all active:scale-[0.98]"
         >
           <LogOut className="w-4 h-4" /> Logout
         </button>
@@ -287,7 +287,7 @@ export default function SettingsScreen() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" onClick={() => setShowEditProfile(false)} />
             <motion.div
-              className="relative bg-white dark:bg-[#151B2C] border border-[#F0F0F0]/10 rounded-3xl p-6 z-10 w-full max-w-sm"
+              className="relative bg-white dark:bg-[#043C31] border border-[#F0F0F0]/10 rounded-3xl p-6 z-10 w-full max-w-sm"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -296,13 +296,13 @@ export default function SettingsScreen() {
               <div className="mb-4">
                 <label htmlFor="edit-name" className="text-sm font-medium text-[#333] dark:text-[#E2E8F0] mb-2 block">Name</label>
                 <input id="edit-name" type="text" value={editName} onChange={e => setEditName(e.target.value)} placeholder="Your name" title="Name"
-                  className="w-full px-4 py-3 bg-transparent border-2 border-[#E0E0E0] dark:border-[#2A364F] dark:text-white rounded-xl text-sm focus:border-[#4F46E5] dark:focus:border-indigo-400 focus:outline-none" />
+                  className="w-full px-4 py-3 bg-transparent border-2 border-[#E0E0E0] dark:border-[#0E6E5A] dark:text-white rounded-xl text-sm focus:border-[#10B981] dark:focus:border-emerald-400 focus:outline-none" />
               </div>
               <div className="flex gap-3">
                 <button onClick={() => setShowEditProfile(false)}
-                  className="flex-1 py-3 rounded-xl border-2 border-[#E0E0E0] dark:border-[#2A364F] text-sm font-medium text-[#333] dark:text-[#E2E8F0] hover:bg-[#F8F8F8] dark:hover:bg-[#1C2437]">Cancel</button>
+                  className="flex-1 py-3 rounded-xl border-2 border-[#E0E0E0] dark:border-[#0E6E5A] text-sm font-medium text-[#333] dark:text-[#E2E8F0] hover:bg-[#ECFDF5] dark:hover:bg-[#085444]">Cancel</button>
                 <button onClick={handleSaveProfile}
-                  className="flex-1 py-3 rounded-xl bg-[#4F46E5] text-white text-sm font-medium shadow-button hover:bg-[#3f38b7]">Save</button>
+                  className="flex-1 py-3 rounded-xl bg-[#10B981] text-white text-sm font-medium shadow-button hover:bg-[#059669]">Save</button>
               </div>
             </motion.div>
           </motion.div>
@@ -316,7 +316,7 @@ export default function SettingsScreen() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" onClick={() => setShowLogoutConfirm(false)} />
             <motion.div
-              className="relative bg-white dark:bg-[#151B2C] border border-[#F0F0F0]/10 rounded-3xl p-6 z-10 w-full max-w-sm text-center"
+              className="relative bg-white dark:bg-[#043C31] border border-[#F0F0F0]/10 rounded-3xl p-6 z-10 w-full max-w-sm text-center"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -328,7 +328,7 @@ export default function SettingsScreen() {
               <p className="text-sm text-[#888] dark:text-[#94A3B8] mb-6">Are you sure you want to logout from Splittr?</p>
               <div className="flex gap-3">
                 <button onClick={() => setShowLogoutConfirm(false)}
-                  className="flex-1 py-3 rounded-xl border-2 border-[#E0E0E0] dark:border-[#2A364F] text-sm font-medium text-[#333] dark:text-[#E2E8F0] hover:bg-[#F8F8F8] dark:hover:bg-[#1C2437]">Cancel</button>
+                  className="flex-1 py-3 rounded-xl border-2 border-[#E0E0E0] dark:border-[#0E6E5A] text-sm font-medium text-[#333] dark:text-[#E2E8F0] hover:bg-[#ECFDF5] dark:hover:bg-[#085444]">Cancel</button>
                 <button onClick={handleLogout}
                   className="flex-1 py-3 rounded-xl bg-[#EF4444] text-white text-sm font-medium hover:bg-[#DC2626]">Logout</button>
               </div>

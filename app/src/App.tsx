@@ -8,7 +8,9 @@ import GroupsScreen from '@/screens/GroupsScreen';
 import GroupDetailsScreen from '@/screens/GroupDetailsScreen';
 import AnalyticsScreen from '@/screens/AnalyticsScreen';
 import SettingsScreen from '@/screens/SettingsScreen';
+import LoginScreen from '@/screens/LoginScreen';
 import ToastContainer from '@/components/ToastContainer';
+import { useAuthStore } from '@/store/authStore';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,23 +22,34 @@ const queryClient = new QueryClient({
 });
 
 export default function App() {
+  const { isAuthenticated } = useAuthStore();
+
   return (
-    <QueryClientProvider client={queryClient}> {/* */}
+    <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <Layout>
+        {isAuthenticated ? (
+          <Layout>
+            <Routes>
+              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard" element={<DashboardScreen />} />
+              <Route path="/wallet" element={<WalletScreen />} />
+              <Route path="/send" element={<SendMoneyScreen />} />
+              <Route path="/groups" element={<GroupsScreen />} />
+              <Route path="/groups/:groupId" element={<GroupDetailsScreen />} />
+              <Route path="/analytics" element={<AnalyticsScreen />} />
+              <Route path="/settings" element={<SettingsScreen />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </Layout>
+        ) : (
           <Routes>
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<DashboardScreen />} />
-            <Route path="/wallet" element={<WalletScreen />} />
-            <Route path="/send" element={<SendMoneyScreen />} />
-            <Route path="/groups" element={<GroupsScreen />} />
-            <Route path="/groups/:groupId" element={<GroupDetailsScreen />} />
-            <Route path="/analytics" element={<AnalyticsScreen />} />
-            <Route path="/settings" element={<SettingsScreen />} />
+            <Route path="/login" element={<LoginScreen />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
-        </Layout>
+        )}
         <ToastContainer />
       </BrowserRouter>
     </QueryClientProvider>
   );
 }
+

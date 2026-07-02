@@ -36,7 +36,7 @@ const initialTransactions: Transaction[] = [
 ];
 
 const initialGoals: SavingsGoal[] = [
-  { id: '1', name: 'New iPhone', target: 90000, current: 45000, currency: 'INR', color: '#4F46E5', deadline: '2026-09-01' },
+  { id: '1', name: 'New iPhone', target: 90000, current: 45000, currency: 'INR', color: '#10B981', deadline: '2026-09-01' },
   { id: '2', name: 'Goa Trip Fund', target: 30000, current: 22000, currency: 'INR', color: '#10B981', deadline: '2026-07-15' },
   { id: '3', name: 'Emergency Fund', target: 100000, current: 35000, currency: 'INR', color: '#F59E0B' },
 ];

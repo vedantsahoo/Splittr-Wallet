@@ -38,7 +38,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const currentTitle = isGroupDetail ? 'Group Details' : (pageTitles[location.pathname] || 'Splittr');
 
   return (
-    <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0B0F19] text-[#333] dark:text-[#E2E8F0] transition-colors duration-200">
+    <div className="min-h-screen bg-[#ECFDF5] dark:bg-[#022C22] text-[#333] dark:text-[#E2E8F0] transition-colors duration-200">
       <NavigationRail />
       <TopAppBar title={currentTitle} scrolled={scrolled} />
 
