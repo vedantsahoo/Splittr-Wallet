@@ -278,4 +278,16 @@ router.delete('/:id/expenses/:expenseId', requireAuth, (req, res) => {
   }
 });
 
+// DELETE /api/groups/:id
+router.delete('/:id', requireAuth, (req: any, res) => {
+  const groupId = req.params.id;
+  try {
+    requireGroupMember(groupId, req.userId);
+    db.prepare('DELETE FROM groups WHERE id = ?').run(groupId);
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(error.message.includes('not found') ? 404 : 500).json({ error: error.message });
+  }
+});
+
 export default router;

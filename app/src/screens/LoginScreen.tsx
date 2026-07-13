@@ -144,7 +144,7 @@ export default function LoginScreen() {
     setErrors({});
 
     const demoEmail = 'vedantvibhusahu1234567@gmail.com';
-    const demoPassword = 'password123';
+    const demoPassword = 'ved123';
 
     let currentEmail = '';
     let currentPassword = '';

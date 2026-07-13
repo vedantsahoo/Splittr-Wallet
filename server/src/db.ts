@@ -143,8 +143,8 @@ export function initDB() {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
-    insertUser.run('1', 'Vedant Sahu', 'https://avatars.githubusercontent.com/u/156448866?v=4', 'vedantvibhusahu1234567@gmail.com', '+91 7007248526', 'SW-78456231', 'password123', 500000, 5000000);
-    insertUser.run('2', 'Rahul Sharma', null, 'rahul@gmail.com', '+91 9999999999', 'SW-11111111', 'rahul123', 500000, 5000000);
+    insertUser.run('1', 'Vedant Sahu', 'https://avatars.githubusercontent.com/u/156448866?v=4', 'vedantvibhusahu1234567@gmail.com', '+91 7007248526', 'SW-7007248526', 'ved123', 500000, 5000000);
+    insertUser.run('2', 'Animesh Sahu', null, 'Sahuanimesh6690@gmail.com', '+91 6306207782', 'SW-6306207782', 'ani6690', 500000, 5000000);
     insertUser.run('3', 'Priya Kapoor', null, 'priya@gmail.com', '+91 8888888888', 'SW-22222222', 'priya123', 500000, 5000000);
     insertUser.run('4', 'Amit Verma', null, 'amit@gmail.com', '+91 7777777777', 'SW-33333333', 'amit123', 500000, 5000000);
     insertUser.run('5', 'Sneha Gupta', null, 'sneha@gmail.com', '+91 6666666666', 'SW-44444444', 'sneha123', 500000, 5000000);

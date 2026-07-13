@@ -11,6 +11,7 @@ interface GroupState {
   createGroup: (group: Omit<Group, 'id' | 'expenses' | 'totalExpenses'>) => Promise<Group | undefined>;
   addExpense: (groupId: string, expense: Omit<GroupExpense, 'id'>) => Promise<Group>;
   deleteExpense: (groupId: string, expenseId: string) => Promise<Group>;
+  deleteGroup: (id: string) => Promise<void>;
   getGroup: (id: string) => Group | undefined;
   getGroupBalances: (groupId: string) => { memberId: string; memberName: string; netBalance: number }[];
 }
@@ -54,6 +55,13 @@ export const useGroupStore = create<GroupState>((set, get) => ({
     await get().init();
     await useWalletStore.getState().init();
     return group;
+  },
+
+  deleteGroup: async (id) => {
+    await apiRequest(`/api/groups/${id}`, {
+      method: 'DELETE',
+    });
+    await get().init();
   },
 
   getGroup: (id: string) => get().groups.find((g) => g.id === id),

@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Plus, CheckCircle, Share2,
+  Plus, CheckCircle, Share2, Trash2,
   Utensils, Car, ShoppingBag, Film, Receipt, Plane, Apple, HeartPulse, MoreHorizontal,
 } from 'lucide-react';
 import { useGroupStore } from '@/store/groupStore';
@@ -28,7 +28,8 @@ const splitTypes: SplitType[] = ['equal', 'percentage', 'custom', 'itemized'];
 
 export default function GroupDetailsScreen() {
   const { groupId } = useParams<{ groupId: string }>();
-  const { getGroup, addExpense, deleteExpense, getGroupBalances } = useGroupStore();
+  const navigate = useNavigate();
+  const { getGroup, addExpense, deleteExpense, deleteGroup, getGroupBalances } = useGroupStore();
 
   const { showToast } = useUIStore();
   const { user } = useAuthStore();
@@ -36,9 +37,6 @@ export default function GroupDetailsScreen() {
   const group = groupId ? getGroup(groupId) : undefined;
   const balances_list = groupId ? getGroupBalances(groupId) : [];
   const myMemberId = user?.id || group?.members.find(member => member.name === 'You')?.id || '';
-  const selectedPayerId = group?.members.some(member => member.id === expensePaidBy)
-    ? expensePaidBy
-    : myMemberId || group?.members[0]?.id || '';
 
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [showSettleUp, setShowSettleUp] = useState(false);
@@ -57,6 +55,28 @@ export default function GroupDetailsScreen() {
   // Settle up state
   const [settleMember, setSettleMember] = useState('');
   const [settleAmount, setSettleAmount] = useState('');
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeletingGroup, setIsDeletingGroup] = useState(false);
+
+  const selectedPayerId = group?.members.some(member => member.id === expensePaidBy)
+    ? expensePaidBy
+    : myMemberId || group?.members[0]?.id || '';
+
+  const handleDeleteGroup = async () => {
+    if (!group || isDeletingGroup) return;
+    setIsDeletingGroup(true);
+    try {
+      await deleteGroup(group.id);
+      showToast('success', `Group "${group.name}" deleted successfully.`);
+      navigate('/groups');
+    } catch (error) {
+      showToast('error', error instanceof Error ? error.message : 'Could not delete group');
+    } finally {
+      setIsDeletingGroup(false);
+      setShowDeleteConfirm(false);
+    }
+  };
 
   if (!group) {
     return (
@@ -145,7 +165,7 @@ export default function GroupDetailsScreen() {
             <div className={`px-4 py-2 rounded-full text-sm font-medium shrink-0 ${myBalance >= 0 ? 'bg-[rgba(16,185,129,0.25)] text-white' : 'bg-[rgba(239,68,68,0.25)] text-white'}`}>
               You: {myBalance >= 0 ? '+' : ''}{formatCurrency(Math.abs(myBalance), group.currency)}
             </div>
-            {balances_list.filter(b => b.memberId !== '1').map(b => (
+            {balances_list.filter(b => b.memberId !== myMemberId).map(b => (
               <div key={b.memberId} className="px-4 py-2 rounded-full bg-white/20 text-sm text-white/90 shrink-0">
                 {b.memberName.split(' ')[0]}: {b.netBalance >= 0 ? '+' : ''}{formatCurrency(Math.abs(b.netBalance), group.currency)}
               </div>
@@ -175,6 +195,15 @@ export default function GroupDetailsScreen() {
           className="w-11 h-11 flex items-center justify-center rounded-xl bg-[#F5F5F5] dark:bg-[#085444] hover:bg-[#E5E5E5] dark:hover:bg-[#0E6E5A] transition-colors active:scale-95 cursor-pointer"
         >
           <Share2 className="w-5 h-5 text-[#10B981] dark:text-emerald-400" />
+        </button>
+        <button
+          onClick={() => setShowDeleteConfirm(true)}
+          type="button"
+          aria-label="Delete group"
+          title="Delete group"
+          className="w-11 h-11 flex items-center justify-center rounded-xl bg-[#FEE2E2] dark:bg-red-950/40 hover:bg-[#FECACA] dark:hover:bg-red-900/40 transition-colors active:scale-95 cursor-pointer"
+        >
+          <Trash2 className="w-5 h-5 text-[#EF4444] dark:text-red-400" />
         </button>
       </div>
 
@@ -314,7 +343,7 @@ export default function GroupDetailsScreen() {
               <div className="mb-4">
                 <label className="text-sm font-medium text-[#333] dark:text-[#E2E8F0] mb-2 block">Pay to</label>
                 <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-                  {balances_list.filter(b => b.memberId !== '1' && b.netBalance < 0).map(b => (
+                  {balances_list.filter(b => b.memberId !== myMemberId && b.netBalance < 0).map(b => (
                     <button key={b.memberId} onClick={() => setSettleMember(b.memberId)}
                       className={`px-4 py-2 rounded-full text-sm font-medium shrink-0 transition-all cursor-pointer ${settleMember === b.memberId ? 'bg-[#10B981] text-white' : 'bg-[#F5F5F5] dark:bg-[#085444] text-[#333] dark:text-[#E2E8F0] hover:bg-[#E5E5E5] dark:hover:bg-[#0E6E5A]'
                         }`}>{b.memberName}</button>
@@ -394,6 +423,48 @@ export default function GroupDetailsScreen() {
               >
                 {isDeletingExpense ? 'Deleting...' : 'Delete Expense'}
               </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <motion.div className="fixed inset-0 z-[300] flex items-center justify-center p-4"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" onClick={() => setShowDeleteConfirm(false)} />
+            <motion.div
+              className="relative bg-white dark:bg-[#043C31] border border-[#F0F0F0]/10 rounded-2xl w-full max-w-sm p-6 z-10 text-center"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 350 }}>
+              
+              <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-950/40 flex items-center justify-center mx-auto mb-4">
+                <Trash2 className="w-6 h-6 text-[#EF4444] dark:text-red-400" />
+              </div>
+              
+              <h3 className="text-lg font-bold text-[#000] dark:text-[#E2E8F0] mb-2">Delete Group</h3>
+              <p className="text-sm text-[#888] dark:text-[#94A3B8] mb-6">
+                Are you sure you want to delete "{group.name}"? This will permanently delete all expenses and split history. This action cannot be undone.
+              </p>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="flex-1 py-3 border border-[#E0E0E0] dark:border-[#0E6E5A] text-[#333] dark:text-[#E2E8F0] rounded-xl text-sm font-medium hover:bg-gray-100 dark:hover:bg-[#085444] transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteGroup}
+                  disabled={isDeletingGroup}
+                  className="flex-1 py-3 bg-red-500 text-white rounded-xl text-sm font-medium hover:bg-red-600 transition-colors active:scale-95 disabled:opacity-50 cursor-pointer"
+                >
+                  {isDeletingGroup ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}
