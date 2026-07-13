@@ -8,12 +8,13 @@ interface AuthState {
   monthlyLimit: number;
   init: () => Promise<void>;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  register: (data: any) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<User>) => Promise<void>;
   updateLimits: (daily: number, monthly: number) => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isAuthenticated: false,
   dailyLimit: 500000,
@@ -34,7 +35,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       console.error('Failed to init auth store', e);
     }
   },
-  login: async (email: string, password: string) => {
+  login: async (email, password) => {
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -53,11 +54,38 @@ export const useAuthStore = create<AuthState>((set) => ({
         });
         return { success: true };
       } else {
-        return { success: false, error: data.error || 'Failed to login' };
+        // Return structured error so LoginScreen can check if it is 'unregistered'
+        return { success: false, error: data.error || 'Failed to login', message: data.message };
       }
     } catch (e: any) {
       console.error(e);
-      return { success: false, error: 'Network error or server is down' };
+      return { success: false, error: 'network_error', message: 'Network error or server is down' };
+    }
+  },
+  register: async (registerData) => {
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(registerData),
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        set({
+          user: data.user,
+          isAuthenticated: data.isAuthenticated,
+          dailyLimit: data.dailyLimit,
+          monthlyLimit: data.monthlyLimit,
+        });
+        return { success: true };
+      } else {
+        return { success: false, error: data.error || 'registration_failed', message: data.message || 'Failed to register' };
+      }
+    } catch (e: any) {
+      console.error(e);
+      return { success: false, error: 'network_error', message: 'Network error or server is down' };
     }
   },
   logout: async () => {

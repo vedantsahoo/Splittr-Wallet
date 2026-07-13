@@ -1,41 +1,36 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ArrowRight, Check } from 'lucide-react';
+import { Search, ArrowRight, Check, Plus, X } from 'lucide-react';
 import { useWalletStore } from '@/store/walletStore';
 import { useUIStore } from '@/store/uiStore';
 import { formatCurrency } from '@/lib/utils';
-
-const mockContacts = [
-  { id: '1', name: 'Animesh Sahu', phone: '+91 9876543210', initials: 'AS', color: '#10B981' },
-  { id: '2', name: 'Aradhana Chaudhary', phone: '+91 7011266435', initials: 'AC', color: '#9966FF' },
-  { id: '3', name: 'Sanjeevni Singh', phone: '+91 9111336025', initials: 'SS', color: '#10B981' },
-  { id: '4', name: 'Ansh Verma', phone: '+91 76543 21098', initials: 'AV', color: '#F59E0B' },
-  { id: '5', name: 'Neha Singh', phone: '+91 65432 10987', initials: 'NS', color: '#EF4444' },
-  { id: '6', name: 'Siddhima Saxena', phone: '+91 9479202055', initials: 'SS', color: '#0D9488' },
-  { id: '7', name: 'Siddharth Srivastav', phone: '+91 8120860675', initials: 'SS', color: '#EC4899' },
-  { id: '8', name: 'Anamika Yadav', phone: '+91 8109152336', initials: 'AY', color: '#3B82F6' },
-  { id: '9', name: 'Vaishnavi Gupta', phone: '+91 9818221115', initials: 'VG', color: '#14B8A6' },
-];
 
 type Step = 'recipient' | 'amount' | 'confirm' | 'success';
 
 export default function SendMoneyScreen() {
   const [step, setStep] = useState<Step>('recipient');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedContact, setSelectedContact] = useState<typeof mockContacts[0] | null>(null);
+  const [selectedContact, setSelectedContact] = useState<any | null>(null);
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
-  const { balances, selectedCurrency, sendMoney, addTransaction } = useWalletStore();
+  
+  // Add Contact Form State
+  const [showAddContact, setShowAddContact] = useState(false);
+  const [newContactName, setNewContactName] = useState('');
+  const [newContactPhone, setNewContactPhone] = useState('');
+  const [contactErrors, setContactErrors] = useState<{ name?: string; phone?: string }>({});
+
+  const { balances, selectedCurrency, sendMoney, addTransaction, contacts, addContact } = useWalletStore();
   const { showToast } = useUIStore();
 
   const currentBalance = balances.find(b => b.currency === selectedCurrency)?.amount || 0;
 
-  const filteredContacts = mockContacts.filter(c =>
+  const filteredContacts = contacts.filter(c =>
     c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.phone.includes(searchQuery)
   );
 
-  const handleSelectContact = (contact: typeof mockContacts[0]) => {
+  const handleSelectContact = (contact: any) => {
     setSelectedContact(contact);
     setStep('amount');
   };
@@ -43,19 +38,7 @@ export default function SendMoneyScreen() {
   const handleSend = () => {
     const amt = parseFloat(amount);
     if (amt > 0 && selectedContact) {
-      sendMoney(amt, selectedCurrency, selectedContact.id);
-      addTransaction({
-        id: Date.now().toString(),
-        type: 'sent',
-        amount: amt,
-        currency: selectedCurrency,
-        description: note || `To ${selectedContact.name}`,
-        date: new Date().toISOString().split('T')[0],
-        category: 'Transfer',
-        status: 'completed',
-        recipientName: selectedContact.name,
-        userAvatar: selectedContact.initials,
-      });
+      sendMoney(amt, selectedCurrency, selectedContact.phone, selectedContact.name);
       setStep('success');
       showToast('success', `Rs. ${amt.toLocaleString()} sent to ${selectedContact.name}!`);
     }
@@ -67,6 +50,29 @@ export default function SendMoneyScreen() {
     setAmount('');
     setNote('');
     setSearchQuery('');
+  };
+
+  const handleCreateContact = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const errors: typeof contactErrors = {};
+    if (!newContactName.trim()) {
+      errors.name = 'Name is required';
+    }
+    if (!newContactPhone.trim()) {
+      errors.phone = 'Phone number is required';
+    }
+    
+    if (Object.keys(errors).length > 0) {
+      setContactErrors(errors);
+      return;
+    }
+
+    await addContact(newContactName, newContactPhone);
+    showToast('success', `${newContactName} added to contacts!`);
+    setNewContactName('');
+    setNewContactPhone('');
+    setContactErrors({});
+    setShowAddContact(false);
   };
 
   return (
@@ -96,27 +102,41 @@ export default function SendMoneyScreen() {
               />
             </div>
 
-            <div className="space-y-1">
-              {filteredContacts.map(contact => (
-                <button
-                  key={contact.id}
-                  onClick={() => handleSelectContact(contact)}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white dark:hover:bg-[#043C31] transition-all text-left active:scale-[0.98] cursor-pointer"
-                >
-                  <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-sm shrink-0"
-                    style={{ backgroundColor: contact.color }}
+            {/* Add Contact Button */}
+            <button
+              onClick={() => setShowAddContact(true)}
+              className="w-full flex items-center justify-center gap-2 mb-4 py-3 border-2 border-dashed border-[#10B981]/30 dark:border-emerald-600/30 rounded-xl hover:bg-white dark:hover:bg-[#043C31] text-[#10B981] dark:text-emerald-400 font-semibold text-sm transition-all cursor-pointer active:scale-[0.98]"
+            >
+              <Plus className="w-4 h-4" /> Add New Contact
+            </button>
+
+            {filteredContacts.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-sm text-[#888] dark:text-[#94A3B8]">No contacts found.</p>
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {filteredContacts.map(contact => (
+                  <button
+                    key={contact.id}
+                    onClick={() => handleSelectContact(contact)}
+                    className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white dark:hover:bg-[#043C31] transition-all text-left active:scale-[0.98] cursor-pointer"
                   >
-                    {contact.initials}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[#333] dark:text-[#E2E8F0]">{contact.name}</p>
-                    <p className="text-xs text-[#888] dark:text-[#94A3B8]">{contact.phone}</p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-[#888] dark:text-[#94A3B8]" />
-                </button>
-              ))}
-            </div>
+                    <div
+                      className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-sm shrink-0"
+                      style={{ backgroundColor: contact.color }}
+                    >
+                      {contact.initials}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-[#333] dark:text-[#E2E8F0]">{contact.name}</p>
+                      <p className="text-xs text-[#888] dark:text-[#94A3B8]">{contact.phone}</p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-[#888] dark:text-[#94A3B8]" />
+                  </button>
+                ))}
+              </div>
+            )}
           </motion.div>
         )}
 
@@ -258,6 +278,71 @@ export default function SendMoneyScreen() {
             >
               Send Another
             </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Add Contact Modal Overlay */}
+      <AnimatePresence>
+        {showAddContact && (
+          <motion.div
+            className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="relative w-full max-w-sm bg-white dark:bg-[#043C31] border border-black/5 dark:border-white/5 rounded-3xl p-6 shadow-modal text-[#333] dark:text-[#E2E8F0]"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+            >
+              <button
+                onClick={() => { setShowAddContact(false); setContactErrors({}); }}
+                className="absolute right-4 top-4 p-1 hover:bg-[#F5F5F5] dark:hover:bg-[#085444] rounded-lg transition-colors cursor-pointer"
+                title="Close"
+              >
+                <X className="w-5 h-5 text-[#888] dark:text-[#94A3B8]" />
+              </button>
+
+              <h3 className="text-lg font-semibold text-[#000] dark:text-white mb-4">Add Contact</h3>
+              
+              <form onSubmit={handleCreateContact} className="space-y-4">
+                <div>
+                  <label htmlFor="contact-name" className="text-xs font-semibold uppercase tracking-wider text-[#666] dark:text-[#94A3B8] mb-1.5 block">Name</label>
+                  <input
+                    id="contact-name"
+                    type="text"
+                    value={newContactName}
+                    onChange={(e) => { setNewContactName(e.target.value); if (contactErrors.name) setContactErrors({ ...contactErrors, name: undefined }); }}
+                    placeholder="Contact Name"
+                    className="w-full px-4 py-3 bg-[#F9FAFB] dark:bg-[#022C22]/60 text-black dark:text-[#E2E8F0] border border-black/5 dark:border-white/5 rounded-xl text-sm focus:border-[#10B981] focus:outline-none focus:bg-white dark:focus:bg-[#022C22]"
+                  />
+                  {contactErrors.name && <p className="text-xs text-[#EF4444] mt-1 pl-1 font-medium">{contactErrors.name}</p>}
+                </div>
+
+                <div>
+                  <label htmlFor="contact-phone" className="text-xs font-semibold uppercase tracking-wider text-[#666] dark:text-[#94A3B8] mb-1.5 block">Phone Number</label>
+                  <input
+                    id="contact-phone"
+                    type="tel"
+                    value={newContactPhone}
+                    onChange={(e) => { setNewContactPhone(e.target.value); if (contactErrors.phone) setContactErrors({ ...contactErrors, phone: undefined }); }}
+                    placeholder="Phone Number"
+                    className="w-full px-4 py-3 bg-[#F9FAFB] dark:bg-[#022C22]/60 text-black dark:text-[#E2E8F0] border border-black/5 dark:border-white/5 rounded-xl text-sm focus:border-[#10B981] focus:outline-none focus:bg-white dark:focus:bg-[#022C22]"
+                  />
+                  {contactErrors.phone && <p className="text-xs text-[#EF4444] mt-1 pl-1 font-medium">{contactErrors.phone}</p>}
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3.5 mt-2 bg-[#10B981] hover:bg-[#059669] text-white rounded-xl text-sm font-semibold shadow-button transition-all cursor-pointer"
+                >
+                  Create Contact
+                </button>
+              </form>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

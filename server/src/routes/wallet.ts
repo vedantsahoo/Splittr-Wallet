@@ -84,31 +84,92 @@ router.post('/add-funds', requireAuth, (req: any, res) => {
 
 // POST /api/wallet/send-money
 router.post('/send-money', requireAuth, (req: any, res) => {
-  const { amount, currency, recipient } = req.body;
+  const { amount, currency, recipientPhone, recipientName } = req.body;
   const userId = req.userId;
 
   const performSend = db.transaction(() => {
-    // 1. Deduct wallet balance
-    const current = db.prepare('SELECT amount FROM wallet_balances WHERE user_id = ? AND currency = ?').get(userId, currency) as any;
-    if (!current) {
+    // 1. Get sender details
+    const sender = db.prepare('SELECT name FROM users WHERE id = ?').get(userId) as any;
+    if (!sender) {
+      throw new Error('Sender user not found');
+    }
+
+    // 2. Deduct sender's wallet balance
+    const currentSenderBal = db.prepare('SELECT amount FROM wallet_balances WHERE user_id = ? AND currency = ?').get(userId, currency) as any;
+    if (!currentSenderBal) {
       throw new Error(`Currency ${currency} not supported`);
     }
-    if (current.amount < amount) {
+    if (currentSenderBal.amount < amount) {
       throw new Error('Insufficient balance');
     }
-    const newAmount = current.amount - amount;
-    db.prepare('UPDATE wallet_balances SET amount = ? WHERE user_id = ? AND currency = ?').run(newAmount, userId, currency);
+    const newSenderAmount = currentSenderBal.amount - amount;
+    db.prepare('UPDATE wallet_balances SET amount = ? WHERE user_id = ? AND currency = ?').run(newSenderAmount, userId, currency);
 
-    // 2. Insert transaction
-    const id = Date.now().toString();
-    const date = new Date().toISOString().split('T')[0];
-    const initials = recipient.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+    // 3. Find receiver by matching phone number
+    const normalizePhone = (p: string) => p.replace(/[\s\-\(\)\+]/g, '');
+    const cleanRecipientPhone = normalizePhone(recipientPhone || '');
+    
+    let receiver = null;
+    if (cleanRecipientPhone) {
+      const allUsers = db.prepare('SELECT * FROM users').all() as any[];
+      for (const u of allUsers) {
+        if (u.phone && normalizePhone(u.phone) === cleanRecipientPhone && u.id !== userId) {
+          receiver = u;
+          break;
+        }
+      }
+    }
+
+    const txDate = new Date().toISOString().split('T')[0];
+    const senderInitials = sender.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+    const recipientInitials = recipientName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+
+    if (receiver) {
+      // 4. Update receiver's wallet balance
+      const currentReceiverBal = db.prepare('SELECT amount FROM wallet_balances WHERE user_id = ? AND currency = ?').get(receiver.id, currency) as any;
+      if (currentReceiverBal) {
+        db.prepare('UPDATE wallet_balances SET amount = ? WHERE user_id = ? AND currency = ?')
+          .run(currentReceiverBal.amount + amount, receiver.id, currency);
+      } else {
+        // If they don't have this balance row, insert it
+        const symbol = currency === 'INR' ? '₹' : currency === 'USD' ? '$' : '€';
+        const flag = currency === 'INR' ? '🇮🇳' : currency === 'USD' ? '🇺🇸' : '🇪🇺';
+        db.prepare('INSERT INTO wallet_balances (user_id, currency, symbol, amount, flag) VALUES (?, ?, ?, ?, ?)')
+          .run(receiver.id, currency, symbol, amount, flag);
+      }
+
+      // 5. Insert 'received' transaction log for receiver
+      db.prepare(`
+        INSERT INTO transactions (id, user_id, type, amount, currency, description, date, category, status, sender_name, user_avatar)
+        VALUES (?, ?, 'received', ?, ?, ?, ?, 'Transfer', 'completed', ?, ?)
+      `).run(
+        `${Date.now()}-rec`,
+        receiver.id,
+        amount,
+        currency,
+        `Received from ${sender.name}`,
+        txDate,
+        sender.name,
+        senderInitials
+      );
+    }
+
+    // 6. Insert 'sent' transaction log for sender
     db.prepare(`
       INSERT INTO transactions (id, user_id, type, amount, currency, description, date, category, status, recipient_name, user_avatar)
       VALUES (?, ?, 'sent', ?, ?, ?, ?, 'Transfer', 'completed', ?, ?)
-    `).run(id, userId, amount, currency, `To ${recipient}`, date, recipient, initials);
+    `).run(
+      Date.now().toString(),
+      userId,
+      amount,
+      currency,
+      `To ${recipientName}`,
+      txDate,
+      recipientName,
+      recipientInitials
+    );
 
-    return { newAmount };
+    return { newAmount: newSenderAmount };
   });
 
   try {
@@ -182,6 +243,41 @@ router.put('/savings-goals/:id/progress', requireAuth, (req: any, res) => {
   try {
     const result = updateGoal();
     res.json(result);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/wallet/contacts
+router.get('/contacts', requireAuth, (req: any, res) => {
+  try {
+    const contacts = db.prepare('SELECT * FROM contacts WHERE user_id = ?').all(req.userId);
+    res.json(contacts);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/wallet/contacts
+router.post('/contacts', requireAuth, (req: any, res) => {
+  try {
+    const { name, phone } = req.body;
+    if (!name || !phone) {
+      return res.status(400).json({ error: 'Name and phone are required' });
+    }
+
+    const id = `c${Date.now()}`;
+    const initials = name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+    
+    // Choose a random pastel color
+    const colors = ['#10B981', '#9966FF', '#F59E0B', '#EF4444', '#0D9488', '#EC4899', '#3B82F6', '#14B8A6'];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+
+    db.prepare('INSERT INTO contacts (id, user_id, name, phone, initials, color) VALUES (?, ?, ?, ?, ?, ?)')
+      .run(id, req.userId, name, phone, initials, color);
+
+    const contact = db.prepare('SELECT * FROM contacts WHERE id = ?').get(id);
+    res.json(contact);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

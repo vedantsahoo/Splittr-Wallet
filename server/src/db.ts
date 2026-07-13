@@ -13,12 +13,13 @@ db.pragma('foreign_keys = ON');
 
 // Initialize database schema
 export function initDB() {
-  // Perform simple check to drop old schema if transitioning to user-isolated database
+  // Drop and recreate if schema is outdated (e.g. no contacts table)
   try {
-    db.prepare('SELECT user_id FROM wallet_balances LIMIT 1').get();
+    db.prepare('SELECT 1 FROM contacts LIMIT 1').get();
   } catch (e) {
-    console.log('Old schema detected. Dropping tables for migration...');
+    console.log('Outdated schema or new database. Recreating tables...');
     db.exec(`
+      DROP TABLE IF EXISTS contacts;
       DROP TABLE IF EXISTS group_expense_shares;
       DROP TABLE IF EXISTS group_expenses;
       DROP TABLE IF EXISTS group_members;
@@ -122,6 +123,16 @@ export function initDB() {
       deadline TEXT,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
+
+    CREATE TABLE IF NOT EXISTS contacts (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      initials TEXT NOT NULL,
+      color TEXT NOT NULL,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
   `);
 
   // Seed default users if not exists
@@ -144,7 +155,7 @@ export function initDB() {
   const balanceCount = db.prepare('SELECT COUNT(*) as count FROM wallet_balances').get() as { count: number };
   if (balanceCount.count === 0) {
     const insertBal = db.prepare('INSERT INTO wallet_balances (user_id, currency, symbol, amount, flag) VALUES (?, ?, ?, ?, ?)');
-    
+
     // User 1
     insertBal.run('1', 'INR', '₹', 695730.50, '🇮🇳');
     insertBal.run('1', 'USD', '$', 1250.0, '🇺🇸');
@@ -170,7 +181,7 @@ export function initDB() {
       INSERT INTO transactions (id, user_id, type, amount, currency, description, date, category, status, sender_name, recipient_name, user_avatar, group_name)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
-    
+
     // User 1 default transactions
     insertTx.run('1', '1', 'wallet_funding', 670250, 'INR', 'Added via UPI', '2026-06-19', 'Wallet', 'completed', null, null, null, null);
     insertTx.run('2', '1', 'received', 5000, 'INR', 'From Rahul Sharma', '2026-06-16', 'Transfer', 'completed', 'Rahul Sharma', null, 'RS', null);
@@ -196,7 +207,7 @@ export function initDB() {
     // Group 1
     db.prepare('INSERT INTO groups (id, name, icon, color, currency, total_expenses) VALUES (?, ?, ?, ?, ?, ?)')
       .run('1', 'Flatmates', '🏠', '#10B981', 'INR', 5000);
-    
+
     const insertMember = db.prepare('INSERT INTO group_members (group_id, member_id, name, initials, balance) VALUES (?, ?, ?, ?, ?)');
     insertMember.run('1', '1', 'You', 'VS', 1250);
     insertMember.run('1', '2', 'Rahul Sharma', 'RS', -1250);
@@ -267,6 +278,21 @@ export function initDB() {
     insertGoal.run('3', '1', 'Emergency Fund', 100000, 35000, 'INR', '#F59E0B', null);
 
     insertGoal.run('4', '2', 'Emergency Fund', 50000, 10000, 'INR', '#F59E0B', null);
+  }
+
+  // Seed default contacts if not exists
+  const contactCount = db.prepare('SELECT COUNT(*) as count FROM contacts').get() as { count: number };
+  if (contactCount.count === 0) {
+    const insertContact = db.prepare('INSERT INTO contacts (id, user_id, name, phone, initials, color) VALUES (?, ?, ?, ?, ?, ?)');
+    insertContact.run('c1', '1', 'Animesh Sahu', '+91 6306207782', 'AS', '#10B981');
+    insertContact.run('c2', '1', 'Vaishnavi Gupta', '+91 9118761113', 'VG', '#14B8A6');
+    insertContact.run('c3', '1', 'Aradhana Chaudhary', '+91 9454420370', 'AC', '#9966FF');
+    insertContact.run('c4', '1', 'Sanjeevni Singh', '+91 8004698021', 'SS', '#10B981');
+    insertContact.run('c5', '1', 'Ansh Verma', '+91 76543 21098', 'AV', '#F59E0B');
+    insertContact.run('c6', '1', 'Neha Singh', '+91 65432 10987', 'NS', '#EF4444');
+    insertContact.run('c7', '1', 'Siddhima Saxena', '+91 9479202055', 'SS', '#0D9488');
+    insertContact.run('c8', '1', 'Siddharth Srivastav', '+91 8120860675', 'SS', '#EC4899');
+    insertContact.run('c9', '1', 'Anamika Yadav', '+91 8109152336', 'AY', '#3B82F6');
   }
 }
 

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Users, ArrowRight, X, UserPlus } from 'lucide-react';
 import { useGroupStore } from '@/store/groupStore';
 import { useUIStore } from '@/store/uiStore';
+import { useAuthStore } from '@/store/authStore';
 import { formatCurrency } from '@/lib/utils';
 
 const memberColors = ['#10B981', '#10B981', '#F59E0B', '#EF4444', '#0D9488', '#EC4899', '#3B82F6', '#14B8A6'];
@@ -12,6 +13,7 @@ export default function GroupsScreen() {
   const navigate = useNavigate();
   const { groups, createGroup } = useGroupStore();
   const { showToast } = useUIStore();
+  const { user } = useAuthStore();
   const [showCreate, setShowCreate] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState('🏠');
@@ -33,12 +35,13 @@ export default function GroupsScreen() {
         return;
       }
 
+      const userInitials = user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'VS';
       createGroup({
         name: newGroupName.trim(),
         icon: selectedIcon,
         color: memberColors[Math.floor(Math.random() * memberColors.length)],
         members: [
-          { id: '1', name: 'You', initials: 'VS', balance: 0 },
+          { id: user?.id || '1', name: 'You', initials: userInitials, balance: 0 },
           ...validMembers,
         ],
         currency: 'INR',

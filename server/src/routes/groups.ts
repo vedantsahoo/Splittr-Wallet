@@ -79,9 +79,14 @@ function getFullGroup(groupId: string) {
 }
 
 // GET /api/groups
-router.get('/', requireAuth, (req, res) => {
+router.get('/', requireAuth, (req: any, res) => {
   try {
-    const groupIds = db.prepare('SELECT id FROM groups').all() as { id: string }[];
+    const groupIds = db.prepare(`
+      SELECT g.id 
+      FROM groups g 
+      JOIN group_members gm ON g.id = gm.group_id 
+      WHERE gm.member_id = ?
+    `).all(req.userId) as { id: string }[];
     const fullGroups = groupIds.map(g => getFullGroup(g.id)).filter(Boolean);
     res.json(fullGroups);
   } catch (error: any) {
@@ -113,21 +118,21 @@ router.post('/', requireAuth, (req: any, res) => {
 
     const insertMember = db.prepare('INSERT INTO group_members (group_id, member_id, name, initials, balance) VALUES (?, ?, ?, ?, 0)');
     
-    // Add "You" as the first member if not explicitly passed
-    let hasYou = false;
-    members.forEach((m: any, idx: number) => {
-      const memberId = m.id || (idx + 1).toString();
-      if (m.name === 'You') hasYou = true;
-      const initials = m.initials || m.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
-      insertMember.run(groupId, memberId, m.name, initials);
-    });
+    // Always insert the logged-in user as the "You" member
+    const activeUser = db.prepare('SELECT name FROM users WHERE id = ?').get(req.userId) as any;
+    const activeName = activeUser?.name || 'You';
+    const activeInitials = activeName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+    insertMember.run(groupId, req.userId, 'You', activeInitials);
 
-    if (!hasYou) {
-      // Use logged in user details if available
-      const activeUser = db.prepare('SELECT name FROM users WHERE id = ?').get(req.userId) as any;
-      const activeName = activeUser?.name || 'You';
-      const initials = activeName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
-      insertMember.run(groupId, req.userId, 'You', initials);
+    // Add other members, making sure to skip any duplicates of the active user
+    if (Array.isArray(members)) {
+      members.forEach((m: any, idx: number) => {
+        if (m.id === req.userId || m.name === 'You') return;
+        
+        const memberId = m.id || `new-${Date.now()}-${idx}`;
+        const initials = m.initials || m.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+        insertMember.run(groupId, memberId, m.name, initials);
+      });
     }
   });
 

@@ -28,5 +28,5 @@ app.get('/health', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Splittr Server is running on http://localhost:${PORT}`);
+  console.log(`Splittr Server is running on http://localhost:${PORT}`);
 });

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Wallet, Mail, Lock, User as UserIcon, Eye, EyeOff,
-  Sun, Moon, ArrowRight, Sparkles
+  Sun, Moon, ArrowRight, Phone
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
@@ -10,17 +10,31 @@ import { useThemeStore } from '@/store/themeStore';
 
 export default function LoginScreen() {
   const login = useAuthStore(state => state.login);
+  const register = useAuthStore(state => state.register);
   const showToast = useUIStore(state => state.showToast);
   const { isDarkMode, toggleDarkMode } = useThemeStore();
 
   const [isLogin, setIsLogin] = useState(true);
-  const [name, setName] = useState('');
+
+  // Form states
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{ name?: string; email?: string; password?: string }>({});
   const [isDemoTyping, setIsDemoTyping] = useState(false);
+  const [errors, setErrors] = useState<{
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+  }>({});
 
   // Sync dark mode class with HTML tag
   useEffect(() => {
@@ -32,20 +46,44 @@ export default function LoginScreen() {
   }, [isDarkMode]);
 
   const validate = () => {
-    const newErrors: { name?: string; email?: string; password?: string } = {};
-    if (!isLogin && !name.trim()) {
-      newErrors.name = 'Name is required';
+    const newErrors: typeof errors = {};
+
+    if (isLogin) {
+      if (!email) {
+        newErrors.email = 'Email is required';
+      } else if (!/\S+@\S+\.\S+/.test(email)) {
+        newErrors.email = 'Please enter a valid email address';
+      }
+      if (!password) {
+        newErrors.password = 'Password is required';
+      }
+    } else {
+      if (!firstName.trim()) {
+        newErrors.firstName = 'First name is required';
+      }
+      if (!lastName.trim()) {
+        newErrors.lastName = 'Last name is required';
+      }
+      if (!phone.trim()) {
+        newErrors.phone = 'Phone number is required';
+      }
+      if (!email) {
+        newErrors.email = 'Email is required';
+      } else if (!/\S+@\S+\.\S+/.test(email)) {
+        newErrors.email = 'Please enter a valid email address';
+      }
+      if (!password) {
+        newErrors.password = 'Password is required';
+      } else if (password.length < 6) {
+        newErrors.password = 'Password must be at least 6 characters';
+      }
+      if (!confirmPassword) {
+        newErrors.confirmPassword = 'Confirm password is required';
+      } else if (password !== confirmPassword) {
+        newErrors.confirmPassword = 'Passwords do not match';
+      }
     }
-    if (!email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-    if (!password) {
-      newErrors.password = 'Password is required';
-    } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -58,12 +96,36 @@ export default function LoginScreen() {
     setIsLoading(true);
     // Simulate API request delay
     setTimeout(async () => {
-      const res = await login(email, password);
-      setIsLoading(false);
-      if (res.success) {
-        showToast('success', isLogin ? 'Welcome back to Splittr!' : 'Account created successfully!');
+      if (isLogin) {
+        const res = await login(email, password);
+        setIsLoading(false);
+        if (res.success) {
+          showToast('success', 'Welcome back to Splittr!');
+        } else {
+          // If unregistered, switch to Sign Up section automatically
+          if (res.error === 'unregistered') {
+            setIsLogin(false);
+            setErrors({});
+            showToast('info', 'Email not registered. Please sign up to create an account.');
+          } else {
+            showToast('error', res.message || 'Invalid credentials');
+          }
+        }
       } else {
-        showToast('error', res.error || 'Invalid credentials');
+        const res = await register({
+          firstName,
+          lastName,
+          phone,
+          email,
+          password,
+          confirmPassword,
+        });
+        setIsLoading(false);
+        if (res.success) {
+          showToast('success', 'Account created successfully!');
+        } else {
+          showToast('error', res.message || 'Registration failed');
+        }
       }
     }, 1200);
   };
@@ -73,9 +135,12 @@ export default function LoginScreen() {
     if (isDemoTyping || isLoading) return;
     setIsDemoTyping(true);
     setIsLogin(true);
-    setName('');
+    setFirstName('');
+    setLastName('');
+    setPhone('');
     setEmail('');
     setPassword('');
+    setConfirmPassword('');
     setErrors({});
 
     const demoEmail = 'vedantvibhusahu1234567@gmail.com';
@@ -115,7 +180,7 @@ export default function LoginScreen() {
                   if (res.success) {
                     showToast('success', 'Logged in with Demo Account!');
                   } else {
-                    showToast('error', res.error || 'Failed to login with demo');
+                    showToast('error', res.message || 'Failed to login with demo');
                   }
                 }, 1000);
               }, 400);
@@ -219,7 +284,7 @@ export default function LoginScreen() {
         {/* Input Forms */}
         <form onSubmit={handleSubmit} className="space-y-4">
 
-          {/* Full Name field (SignUp only) */}
+          {/* First Name & Last Name & Phone field (SignUp only) */}
           <AnimatePresence initial={false}>
             {!isLogin && (
               <motion.div
@@ -229,28 +294,84 @@ export default function LoginScreen() {
                 transition={{ duration: 0.25 }}
                 className="overflow-hidden"
               >
-                <div className="pb-1">
-                  <label htmlFor="name-input" className="block text-xs font-semibold uppercase tracking-wider text-[#666] dark:text-[#94A3B8] mb-1.5 pl-1">
-                    Full Name
-                  </label>
-                  <div className="relative">
-                    <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#999] dark:text-[#475569]" />
-                    <input
-                      id="name-input"
-                      type="text"
-                      value={name}
-                      onChange={(e) => { setName(e.target.value); if (errors.name) setErrors({ ...errors, name: undefined }); }}
-                      placeholder="User Name"
-                      disabled={isLoading || isDemoTyping}
-                      className={`w-full pl-12 pr-4 py-3.5 bg-[#F9FAFB] dark:bg-[#022C22]/60 text-black dark:text-[#E2E8F0] border-2 rounded-2xl text-sm transition-all focus:outline-none focus:bg-white dark:focus:bg-[#022C22] ${errors.name
-                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-1 focus:ring-[#EF4444]'
-                        : 'border-black/5 dark:border-white/5 focus:border-[#10B981] dark:focus:border-emerald-400 focus:shadow-[0_0_15px_rgba(16,185,129,0.15)]'
-                        }`}
-                    />
+                <div className="space-y-4 pb-1">
+
+                  {/* First Name & Last Name in 2 columns */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label htmlFor="first-name-input" className="block text-xs font-semibold uppercase tracking-wider text-[#666] dark:text-[#94A3B8] mb-1.5 pl-1">
+                        First Name
+                      </label>
+                      <div className="relative">
+                        <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#999] dark:text-[#475569]" />
+                        <input
+                          id="first-name-input"
+                          type="text"
+                          value={firstName}
+                          onChange={(e) => { setFirstName(e.target.value); if (errors.firstName) setErrors({ ...errors, firstName: undefined }); }}
+                          placeholder="First Name"
+                          disabled={isLoading || isDemoTyping}
+                          className={`w-full pl-10 pr-4 py-3 bg-[#F9FAFB] dark:bg-[#022C22]/60 text-black dark:text-[#E2E8F0] border-2 rounded-2xl text-sm transition-all focus:outline-none focus:bg-white dark:focus:bg-[#022C22] ${errors.firstName
+                            ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-1 focus:ring-[#EF4444]'
+                            : 'border-black/5 dark:border-white/5 focus:border-[#10B981] dark:focus:border-emerald-400'
+                            }`}
+                        />
+                      </div>
+                      {errors.firstName && (
+                        <p className="text-xs text-[#EF4444] mt-1 pl-1 font-medium">{errors.firstName}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label htmlFor="last-name-input" className="block text-xs font-semibold uppercase tracking-wider text-[#666] dark:text-[#94A3B8] mb-1.5 pl-1">
+                        Last Name
+                      </label>
+                      <div className="relative">
+                        <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#999] dark:text-[#475569]" />
+                        <input
+                          id="last-name-input"
+                          type="text"
+                          value={lastName}
+                          onChange={(e) => { setLastName(e.target.value); if (errors.lastName) setErrors({ ...errors, lastName: undefined }); }}
+                          placeholder="Last Name"
+                          disabled={isLoading || isDemoTyping}
+                          className={`w-full pl-10 pr-4 py-3 bg-[#F9FAFB] dark:bg-[#022C22]/60 text-black dark:text-[#E2E8F0] border-2 rounded-2xl text-sm transition-all focus:outline-none focus:bg-white dark:focus:bg-[#022C22] ${errors.lastName
+                            ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-1 focus:ring-[#EF4444]'
+                            : 'border-black/5 dark:border-white/5 focus:border-[#10B981] dark:focus:border-emerald-400'
+                            }`}
+                        />
+                      </div>
+                      {errors.lastName && (
+                        <p className="text-xs text-[#EF4444] mt-1 pl-1 font-medium">{errors.lastName}</p>
+                      )}
+                    </div>
                   </div>
-                  {errors.name && (
-                    <p className="text-xs text-[#EF4444] mt-1 pl-1 font-medium">{errors.name}</p>
-                  )}
+
+                  {/* Phone Number */}
+                  <div>
+                    <label htmlFor="phone-input" className="block text-xs font-semibold uppercase tracking-wider text-[#666] dark:text-[#94A3B8] mb-1.5 pl-1">
+                      Phone Number
+                    </label>
+                    <div className="relative">
+                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#999] dark:text-[#475569]" />
+                      <input
+                        id="phone-input"
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => { setPhone(e.target.value); if (errors.phone) setErrors({ ...errors, phone: undefined }); }}
+                        placeholder="Phone Number"
+                        disabled={isLoading || isDemoTyping}
+                        className={`w-full pl-10 pr-4 py-3 bg-[#F9FAFB] dark:bg-[#022C22]/60 text-black dark:text-[#E2E8F0] border-2 rounded-2xl text-sm transition-all focus:outline-none focus:bg-white dark:focus:bg-[#022C22] ${errors.phone
+                          ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-1 focus:ring-[#EF4444]'
+                          : 'border-black/5 dark:border-white/5 focus:border-[#10B981] dark:focus:border-emerald-400'
+                          }`}
+                      />
+                    </div>
+                    {errors.phone && (
+                      <p className="text-xs text-[#EF4444] mt-1 pl-1 font-medium">{errors.phone}</p>
+                    )}
+                  </div>
+
                 </div>
               </motion.div>
             )}
@@ -327,6 +448,43 @@ export default function LoginScreen() {
             )}
           </div>
 
+          {/* Confirm Password field (SignUp only) */}
+          <AnimatePresence initial={false}>
+            {!isLogin && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="overflow-hidden"
+              >
+                <div className="pb-1">
+                  <label htmlFor="confirm-password-input" className="block text-xs font-semibold uppercase tracking-wider text-[#666] dark:text-[#94A3B8] mb-1.5 pl-1">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#999] dark:text-[#475569]" />
+                    <input
+                      id="confirm-password-input"
+                      type={showPassword ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={(e) => { setConfirmPassword(e.target.value); if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: undefined }); }}
+                      placeholder="••••••••"
+                      disabled={isLoading || isDemoTyping}
+                      className={`w-full pl-12 pr-12 py-3.5 bg-[#F9FAFB] dark:bg-[#022C22]/60 text-black dark:text-[#E2E8F0] border-2 rounded-2xl text-sm transition-all focus:outline-none focus:bg-white dark:focus:bg-[#022C22] ${errors.confirmPassword
+                        ? 'border-[#EF4444] focus:border-[#EF4444] focus:ring-1 focus:ring-[#EF4444]'
+                        : 'border-black/5 dark:border-white/5 focus:border-[#10B981] dark:focus:border-emerald-400'
+                        }`}
+                    />
+                  </div>
+                  {errors.confirmPassword && (
+                    <p className="text-xs text-[#EF4444] mt-1 pl-1 font-medium">{errors.confirmPassword}</p>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Submit Button */}
           <motion.button
             whileTap={{ scale: 0.98 }}
@@ -344,6 +502,20 @@ export default function LoginScreen() {
             )}
           </motion.button>
         </form>
+
+        {/* Demo Login Button */}
+        {isLogin && (
+          <div className="mt-5 text-center">
+            <span className="text-xs text-[#777] dark:text-[#94A3B8] font-medium mr-1.5">Want a quick test?</span>
+            <button
+              onClick={handleDemoSignIn}
+              disabled={isLoading || isDemoTyping}
+              className="text-xs font-bold text-[#10B981] dark:text-emerald-400 hover:underline bg-transparent border-0 cursor-pointer disabled:opacity-50"
+            >
+              Sign In as Demo User
+            </button>
+          </div>
+        )}
       </motion.div>
     </div>
   );
