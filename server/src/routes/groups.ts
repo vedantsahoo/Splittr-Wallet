@@ -14,6 +14,26 @@ function requireAuth(req: any, res: any, next: any) {
   next();
 }
 
+function requireGroupMember(groupId: string, userId: string) {
+  const membership = db.prepare('SELECT 1 FROM group_members WHERE group_id = ? AND member_id = ?').get(groupId, userId);
+  if (!membership) {
+    throw new Error('Group not found');
+  }
+}
+
+function parsePositiveAmount(value: unknown, fieldName = 'amount') {
+  const amount = Number(value);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error(`${fieldName} must be a positive number`);
+  }
+  return amount;
+}
+
+function isBalancedSplit(amount: number, shares: { amount: number }[]) {
+  const totalShares = shares.reduce((sum, share) => sum + share.amount, 0);
+  return Math.abs(totalShares - amount) <= 0.01;
+}
+
 // Helper to fetch complete details of a single group
 function getFullGroup(groupId: string) {
   const group = db.prepare('SELECT * FROM groups WHERE id = ?').get(groupId) as any;
@@ -97,13 +117,14 @@ router.get('/', requireAuth, (req: any, res) => {
 // GET /api/groups/:id
 router.get('/:id', requireAuth, (req, res) => {
   try {
+    requireGroupMember(req.params.id, (req as any).userId);
     const group = getFullGroup(req.params.id);
     if (!group) {
       return res.status(404).json({ error: 'Group not found' });
     }
     res.json(group);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    res.status(error.message.includes('not found') ? 404 : 500).json({ error: error.message });
   }
 });
 
@@ -113,6 +134,10 @@ router.post('/', requireAuth, (req: any, res) => {
   const groupId = Date.now().toString();
 
   const createTransaction = db.transaction(() => {
+    if (!String(name || '').trim()) {
+      throw new Error('Group name is required');
+    }
+
     db.prepare('INSERT INTO groups (id, name, icon, color, currency, total_expenses) VALUES (?, ?, ?, ?, ?, 0)')
       .run(groupId, name, icon || '👥', color || '#10B981', currency);
 
@@ -127,11 +152,11 @@ router.post('/', requireAuth, (req: any, res) => {
     // Add other members, making sure to skip any duplicates of the active user
     if (Array.isArray(members)) {
       members.forEach((m: any, idx: number) => {
-        if (m.id === req.userId || m.name === 'You') return;
+        if (!m?.name || m.id === req.userId || m.name === 'You') return;
         
         const memberId = m.id || `new-${Date.now()}-${idx}`;
         const initials = m.initials || m.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
-        insertMember.run(groupId, memberId, m.name, initials);
+        insertMember.run(groupId, memberId, String(m.name).trim(), initials);
       });
     }
   });
@@ -141,7 +166,7 @@ router.post('/', requireAuth, (req: any, res) => {
     const group = getFullGroup(groupId);
     res.json(group);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    res.status(error.message.includes('required') ? 400 : 500).json({ error: error.message });
   }
 });
 
@@ -152,21 +177,53 @@ router.post('/:id/expenses', requireAuth, (req: any, res) => {
   const expenseId = `e${Date.now()}`;
 
   const addExpenseTx = db.transaction(() => {
+    requireGroupMember(groupId, req.userId);
+    const parsedAmount = parsePositiveAmount(amount);
+    const cleanDescription = String(description || '').trim();
+    if (!cleanDescription) {
+      throw new Error('Description is required');
+    }
+    if (!Array.isArray(shares) || shares.length === 0) {
+      throw new Error('At least one expense share is required');
+    }
+
+    const members = db.prepare('SELECT member_id, name FROM group_members WHERE group_id = ?').all(groupId) as any[];
+    const memberIds = new Set(members.map(member => member.member_id));
+    if (!memberIds.has(paidBy)) {
+      throw new Error('Payer is not a group member');
+    }
+
+    const normalizedShares = shares.map((share: any) => {
+      const shareAmount = parsePositiveAmount(share.amount, 'share amount');
+      if (!memberIds.has(share.memberId)) {
+        throw new Error('Expense share includes a non-member');
+      }
+      return {
+        memberId: share.memberId,
+        memberName: share.memberName || members.find(member => member.member_id === share.memberId)?.name || 'Member',
+        amount: shareAmount,
+      };
+    });
+
+    if (!isBalancedSplit(parsedAmount, normalizedShares)) {
+      throw new Error('Expense shares must equal the total amount');
+    }
+
     // 1. Insert expense
     db.prepare(`
       INSERT INTO group_expenses (id, group_id, description, amount, paid_by, paid_by_name, date, category, split_type)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(expenseId, groupId, description, amount, paidBy, paidByName, date, category, splitType || 'equal');
+    `).run(expenseId, groupId, cleanDescription, parsedAmount, paidBy, paidByName, date, category, splitType || 'equal');
 
     // 2. Insert shares
     const insertShare = db.prepare('INSERT INTO group_expense_shares (expense_id, member_id, member_name, amount) VALUES (?, ?, ?, ?)');
-    shares.forEach((share: any) => {
+    normalizedShares.forEach((share: any) => {
       insertShare.run(expenseId, share.memberId, share.memberName, share.amount);
     });
 
     // 3. Update total expenses of group
     db.prepare('UPDATE groups SET total_expenses = total_expenses + ? WHERE id = ?')
-      .run(amount, groupId);
+      .run(parsedAmount, groupId);
 
     // 4. Also insert a transaction for user if they were involved in paying or sharing
     const txId = Date.now().toString();
@@ -174,7 +231,7 @@ router.post('/:id/expenses', requireAuth, (req: any, res) => {
     db.prepare(`
       INSERT INTO transactions (id, user_id, type, amount, currency, description, date, category, status, group_name)
       VALUES (?, ?, 'group_expense', ?, 'INR', ?, ?, ?, 'completed', ?)
-    `).run(txId, req.userId, amount, description, date, category, groupNameRow?.name || 'Group');
+    `).run(txId, req.userId, parsedAmount, cleanDescription, date, category, groupNameRow?.name || 'Group');
   });
 
   try {
@@ -182,7 +239,15 @@ router.post('/:id/expenses', requireAuth, (req: any, res) => {
     const group = getFullGroup(groupId);
     res.json(group);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    const isClientError = [
+      'not found',
+      'must be',
+      'required',
+      'member',
+      'shares',
+      'Payer',
+    ].some((message) => error.message.includes(message));
+    res.status(isClientError ? 400 : 500).json({ error: error.message });
   }
 });
 
@@ -192,12 +257,14 @@ router.delete('/:id/expenses/:expenseId', requireAuth, (req, res) => {
   const expenseId = req.params.expenseId;
 
   const deleteExpenseTx = db.transaction(() => {
-    const expense = db.prepare('SELECT amount FROM group_expenses WHERE id = ?').get(expenseId) as any;
+    requireGroupMember(groupId, (req as any).userId);
+
+    const expense = db.prepare('SELECT amount FROM group_expenses WHERE id = ? AND group_id = ?').get(expenseId, groupId) as any;
     if (!expense) {
       throw new Error('Expense not found');
     }
 
-    db.prepare('DELETE FROM group_expenses WHERE id = ?').run(expenseId);
+    db.prepare('DELETE FROM group_expenses WHERE id = ? AND group_id = ?').run(expenseId, groupId);
     db.prepare('UPDATE groups SET total_expenses = MAX(0, total_expenses - ?) WHERE id = ?')
       .run(expense.amount, groupId);
   });
@@ -207,7 +274,7 @@ router.delete('/:id/expenses/:expenseId', requireAuth, (req, res) => {
     const group = getFullGroup(groupId);
     res.json(group);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    res.status(error.message.includes('not found') ? 404 : 500).json({ error: error.message });
   }
 });
 

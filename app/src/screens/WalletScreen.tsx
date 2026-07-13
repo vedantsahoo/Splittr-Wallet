@@ -57,12 +57,13 @@ function TransactionRow({ tx }: { tx: Transaction }) {
 export default function WalletScreen() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { balances, transactions, selectedCurrency, setCurrency } = useWalletStore();
+  const { balances, transactions, selectedCurrency, setCurrency, addFunds } = useWalletStore();
   const { showToast } = useUIStore();
   const [activeFilter, setActiveFilter] = useState('All');
   const [showQR, setShowQR] = useState(false);
   const [showAddMoney, setShowAddMoney] = useState(false);
   const [addAmount, setAddAmount] = useState('');
+  const [isAddingMoney, setIsAddingMoney] = useState(false);
 
   const currentBalance = balances.find(b => b.currency === selectedCurrency)?.amount || 0;
 
@@ -74,23 +75,20 @@ export default function WalletScreen() {
     return true;
   });
 
-  const handleAddMoney = () => {
+  const handleAddMoney = async () => {
     const amount = parseFloat(addAmount);
-    if (amount > 0) {
-      useWalletStore.getState().addFunds(amount, selectedCurrency);
-      useWalletStore.getState().addTransaction({
-        id: Date.now().toString(),
-        type: 'wallet_funding',
-        amount,
-        currency: selectedCurrency,
-        description: 'Added via UPI',
-        date: new Date().toISOString().split('T')[0],
-        category: 'Wallet',
-        status: 'completed',
-      });
-      showToast('success', `Rs. ${amount.toLocaleString()} added to wallet!`);
-      setShowAddMoney(false);
-      setAddAmount('');
+    if (amount > 0 && !isAddingMoney) {
+      setIsAddingMoney(true);
+      try {
+        await addFunds(amount, selectedCurrency);
+        showToast('success', `Rs. ${amount.toLocaleString()} added to wallet!`);
+        setShowAddMoney(false);
+        setAddAmount('');
+      } catch (error) {
+        showToast('error', error instanceof Error ? error.message : 'Could not add money');
+      } finally {
+        setIsAddingMoney(false);
+      }
     }
   };
 
@@ -111,6 +109,7 @@ export default function WalletScreen() {
             <div className="relative">
               <button
                 onClick={() => {
+                  if (balances.length === 0) return;
                   const idx = balances.findIndex(b => b.currency === selectedCurrency);
                   const next = balances[(idx + 1) % balances.length];
                   setCurrency(next.currency);
@@ -299,10 +298,10 @@ export default function WalletScreen() {
               </div>
               <button
                 onClick={handleAddMoney}
-                disabled={!addAmount || parseFloat(addAmount) <= 0}
+                disabled={isAddingMoney || !addAmount || parseFloat(addAmount) <= 0}
                 className="w-full py-4 rounded-xl bg-[#10B981] text-white font-semibold text-lg shadow-button hover:bg-[#059669] transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer"
               >
-                Add Rs. {addAmount || '0'}
+                {isAddingMoney ? 'Adding...' : `Add Rs. ${addAmount || '0'}`}
               </button>
             </motion.div>
           </motion.div>

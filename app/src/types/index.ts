@@ -14,6 +14,14 @@ export interface WalletBalance {
   flag: string;
 }
 
+export interface Contact {
+  id: string;
+  name: string;
+  phone: string;
+  initials: string;
+  color: string;
+}
+
 export interface Transaction {
   id: string;
   type: 'sent' | 'received' | 'group_expense' | 'group_settlement' | 'wallet_funding' | 'withdrawal';

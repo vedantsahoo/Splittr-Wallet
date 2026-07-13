@@ -14,6 +14,14 @@ function requireAuth(req: any, res: any, next: any) {
   next();
 }
 
+function parsePositiveAmount(value: unknown, fieldName = 'amount') {
+  const amount = Number(value);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error(`${fieldName} must be a positive number`);
+  }
+  return amount;
+}
+
 // GET /api/wallet/balances
 router.get('/balances', requireAuth, (req: any, res) => {
   try {
@@ -51,10 +59,12 @@ router.get('/transactions', requireAuth, (req: any, res) => {
 
 // POST /api/wallet/add-funds
 router.post('/add-funds', requireAuth, (req: any, res) => {
-  const { amount, currency } = req.body;
+  const { currency } = req.body;
   const userId = req.userId;
   
   const updateBalance = db.transaction(() => {
+    const amount = parsePositiveAmount(req.body.amount);
+
     // 1. Update wallet balance
     const current = db.prepare('SELECT amount FROM wallet_balances WHERE user_id = ? AND currency = ?').get(userId, currency) as any;
     if (!current) {
@@ -78,16 +88,22 @@ router.post('/add-funds', requireAuth, (req: any, res) => {
     const result = updateBalance();
     res.json({ success: true, newAmount: result.newAmount });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    res.status(error.message.includes('must be') || error.message.includes('not supported') ? 400 : 500).json({ error: error.message });
   }
 });
 
 // POST /api/wallet/send-money
 router.post('/send-money', requireAuth, (req: any, res) => {
-  const { amount, currency, recipientPhone, recipientName } = req.body;
+  const { currency, recipientPhone, recipientName } = req.body;
   const userId = req.userId;
 
   const performSend = db.transaction(() => {
+    const amount = parsePositiveAmount(req.body.amount);
+    const cleanRecipientName = String(recipientName || '').trim();
+    if (!cleanRecipientName) {
+      throw new Error('Recipient name is required');
+    }
+
     // 1. Get sender details
     const sender = db.prepare('SELECT name FROM users WHERE id = ?').get(userId) as any;
     if (!sender) {
@@ -122,7 +138,7 @@ router.post('/send-money', requireAuth, (req: any, res) => {
 
     const txDate = new Date().toISOString().split('T')[0];
     const senderInitials = sender.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
-    const recipientInitials = recipientName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+    const recipientInitials = cleanRecipientName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
 
     if (receiver) {
       // 4. Update receiver's wallet balance
@@ -163,9 +179,9 @@ router.post('/send-money', requireAuth, (req: any, res) => {
       userId,
       amount,
       currency,
-      `To ${recipientName}`,
+      `To ${cleanRecipientName}`,
       txDate,
-      recipientName,
+      cleanRecipientName,
       recipientInitials
     );
 
@@ -176,7 +192,13 @@ router.post('/send-money', requireAuth, (req: any, res) => {
     const result = performSend();
     res.json({ success: true, newAmount: result.newAmount });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    const isClientError = [
+      'must be',
+      'required',
+      'not supported',
+      'Insufficient balance',
+    ].some((message) => error.message.includes(message));
+    res.status(isClientError ? 400 : 500).json({ error: error.message });
   }
 });
 
@@ -194,26 +216,31 @@ router.get('/savings-goals', requireAuth, (req: any, res) => {
 router.post('/savings-goals', requireAuth, (req: any, res) => {
   try {
     const { name, target, current, currency, color, deadline } = req.body;
+    const parsedTarget = parsePositiveAmount(target, 'target');
+    const parsedCurrent = current === undefined ? 0 : Number(current);
+    if (!Number.isFinite(parsedCurrent) || parsedCurrent < 0) {
+      return res.status(400).json({ error: 'current must be a non-negative number' });
+    }
     const id = Date.now().toString();
     db.prepare(`
       INSERT INTO savings_goals (id, user_id, name, target, current, currency, color, deadline)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(id, req.userId, name, target, current || 0, currency, color || '#10B981', deadline || null);
+    `).run(id, req.userId, name, parsedTarget, parsedCurrent, currency, color || '#10B981', deadline || null);
 
     const goal = db.prepare('SELECT * FROM savings_goals WHERE id = ?').get(id);
     res.json(goal);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    res.status(error.message.includes('must be') ? 400 : 500).json({ error: error.message });
   }
 });
 
 // PUT /api/wallet/savings-goals/:id/progress
 router.put('/savings-goals/:id/progress', requireAuth, (req: any, res) => {
   const { id } = req.params;
-  const { amount } = req.body;
   const userId = req.userId;
 
   const updateGoal = db.transaction(() => {
+    const amount = parsePositiveAmount(req.body.amount);
     const goal = db.prepare('SELECT * FROM savings_goals WHERE id = ? AND user_id = ?').get(id, userId) as any;
     if (!goal) {
       throw new Error('Goal not found');
@@ -244,7 +271,7 @@ router.put('/savings-goals/:id/progress', requireAuth, (req: any, res) => {
     const result = updateGoal();
     res.json(result);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    res.status(error.message.includes('must be') || error.message.includes('not found') ? 400 : 500).json({ error: error.message });
   }
 });
 

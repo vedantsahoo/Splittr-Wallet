@@ -4,15 +4,17 @@ import { Search, ArrowRight, Check, Plus, X } from 'lucide-react';
 import { useWalletStore } from '@/store/walletStore';
 import { useUIStore } from '@/store/uiStore';
 import { formatCurrency } from '@/lib/utils';
+import type { Contact } from '@/types';
 
 type Step = 'recipient' | 'amount' | 'confirm' | 'success';
 
 export default function SendMoneyScreen() {
   const [step, setStep] = useState<Step>('recipient');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedContact, setSelectedContact] = useState<any | null>(null);
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
+  const [isSending, setIsSending] = useState(false);
   
   // Add Contact Form State
   const [showAddContact, setShowAddContact] = useState(false);
@@ -20,7 +22,7 @@ export default function SendMoneyScreen() {
   const [newContactPhone, setNewContactPhone] = useState('');
   const [contactErrors, setContactErrors] = useState<{ name?: string; phone?: string }>({});
 
-  const { balances, selectedCurrency, sendMoney, addTransaction, contacts, addContact } = useWalletStore();
+  const { balances, selectedCurrency, sendMoney, contacts, addContact } = useWalletStore();
   const { showToast } = useUIStore();
 
   const currentBalance = balances.find(b => b.currency === selectedCurrency)?.amount || 0;
@@ -30,17 +32,24 @@ export default function SendMoneyScreen() {
     c.phone.includes(searchQuery)
   );
 
-  const handleSelectContact = (contact: any) => {
+  const handleSelectContact = (contact: Contact) => {
     setSelectedContact(contact);
     setStep('amount');
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const amt = parseFloat(amount);
-    if (amt > 0 && selectedContact) {
-      sendMoney(amt, selectedCurrency, selectedContact.phone, selectedContact.name);
-      setStep('success');
-      showToast('success', `Rs. ${amt.toLocaleString()} sent to ${selectedContact.name}!`);
+    if (amt > 0 && selectedContact && !isSending) {
+      setIsSending(true);
+      try {
+        await sendMoney(amt, selectedCurrency, selectedContact.phone, selectedContact.name);
+        setStep('success');
+        showToast('success', `Rs. ${amt.toLocaleString()} sent to ${selectedContact.name}!`);
+      } catch (error) {
+        showToast('error', error instanceof Error ? error.message : 'Could not send money');
+      } finally {
+        setIsSending(false);
+      }
     }
   };
 
@@ -67,12 +76,16 @@ export default function SendMoneyScreen() {
       return;
     }
 
-    await addContact(newContactName, newContactPhone);
-    showToast('success', `${newContactName} added to contacts!`);
-    setNewContactName('');
-    setNewContactPhone('');
-    setContactErrors({});
-    setShowAddContact(false);
+    try {
+      const contact = await addContact(newContactName.trim(), newContactPhone.trim());
+      showToast('success', `${contact.name} added to contacts!`);
+      setNewContactName('');
+      setNewContactPhone('');
+      setContactErrors({});
+      setShowAddContact(false);
+    } catch (error) {
+      showToast('error', error instanceof Error ? error.message : 'Could not add contact');
+    }
   };
 
   return (
@@ -244,9 +257,10 @@ export default function SendMoneyScreen() {
 
             <button
               onClick={handleSend}
-              className="w-full py-4 rounded-xl bg-[#10B981] text-white font-semibold text-lg shadow-button hover:bg-[#059669] transition-all active:scale-[0.98] cursor-pointer"
+              disabled={isSending}
+              className="w-full py-4 rounded-xl bg-[#10B981] text-white font-semibold text-lg shadow-button hover:bg-[#059669] transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer"
             >
-              Confirm & Send
+              {isSending ? 'Sending...' : 'Confirm & Send'}
             </button>
           </motion.div>
         )}

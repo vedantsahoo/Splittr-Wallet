@@ -1,20 +1,35 @@
 import { create } from 'zustand';
 import type { User } from '@/types';
 
+interface AuthActionResult {
+  success: boolean;
+  error?: string;
+  message?: string;
+}
+
+interface RegisterData {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   dailyLimit: number;
   monthlyLimit: number;
   init: () => Promise<void>;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  register: (data: any) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string, password: string) => Promise<AuthActionResult>;
+  register: (data: RegisterData) => Promise<AuthActionResult>;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<User>) => Promise<void>;
   updateLimits: (daily: number, monthly: number) => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
   dailyLimit: 500000,
@@ -57,7 +72,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         // Return structured error so LoginScreen can check if it is 'unregistered'
         return { success: false, error: data.error || 'Failed to login', message: data.message };
       }
-    } catch (e: any) {
+    } catch (e) {
       console.error(e);
       return { success: false, error: 'network_error', message: 'Network error or server is down' };
     }
@@ -83,7 +98,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       } else {
         return { success: false, error: data.error || 'registration_failed', message: data.message || 'Failed to register' };
       }
-    } catch (e: any) {
+    } catch (e) {
       console.error(e);
       return { success: false, error: 'network_error', message: 'Network error or server is down' };
     }

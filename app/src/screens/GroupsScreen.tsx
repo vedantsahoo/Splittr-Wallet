@@ -18,11 +18,12 @@ export default function GroupsScreen() {
   const [newGroupName, setNewGroupName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState('🏠');
   const [memberInputs, setMemberInputs] = useState(['']);
+  const [isCreating, setIsCreating] = useState(false);
 
   const icons = ['🏠', '🏖️', '🎓', '🎉', '✈️', '🍽️', '🚗', '💼', '🎮', '🎬'];
 
-  const handleCreateGroup = () => {
-    if (newGroupName.trim()) {
+  const handleCreateGroup = async () => {
+    if (newGroupName.trim() && !isCreating) {
       const validMembers = memberInputs.filter(m => m.trim()).map((name, i) => ({
         id: `new-${Date.now()}-${i}`,
         name: name.trim(),
@@ -36,20 +37,27 @@ export default function GroupsScreen() {
       }
 
       const userInitials = user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'VS';
-      createGroup({
-        name: newGroupName.trim(),
-        icon: selectedIcon,
-        color: memberColors[Math.floor(Math.random() * memberColors.length)],
-        members: [
-          { id: user?.id || '1', name: 'You', initials: userInitials, balance: 0 },
-          ...validMembers,
-        ],
-        currency: 'INR',
-      });
-      showToast('success', `Group "${newGroupName}" created!`);
-      setShowCreate(false);
-      setNewGroupName('');
-      setMemberInputs(['']);
+      setIsCreating(true);
+      try {
+        const group = await createGroup({
+          name: newGroupName.trim(),
+          icon: selectedIcon,
+          color: memberColors[Math.floor(Math.random() * memberColors.length)],
+          members: [
+            { id: user?.id || '1', name: 'You', initials: userInitials, balance: 0 },
+            ...validMembers,
+          ],
+          currency: 'INR',
+        });
+        showToast('success', `Group "${group?.name || newGroupName}" created!`);
+        setShowCreate(false);
+        setNewGroupName('');
+        setMemberInputs(['']);
+      } catch (error) {
+        showToast('error', error instanceof Error ? error.message : 'Could not create group');
+      } finally {
+        setIsCreating(false);
+      }
     }
   };
 
@@ -207,10 +215,10 @@ export default function GroupsScreen() {
 
               <button
                 onClick={handleCreateGroup}
-                disabled={!newGroupName.trim()}
+                disabled={isCreating || !newGroupName.trim()}
                 className="w-full py-4 rounded-xl bg-[#10B981] text-white font-semibold shadow-button hover:bg-[#059669] transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer"
               >
-                Create Group
+                {isCreating ? 'Creating...' : 'Create Group'}
               </button>
             </motion.div>
           </motion.div>

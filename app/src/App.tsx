@@ -24,11 +24,13 @@ const queryClient = new QueryClient({
 import { useEffect } from 'react';
 import { useWalletStore } from '@/store/walletStore';
 import { useGroupStore } from '@/store/groupStore';
+import { useUIStore } from '@/store/uiStore';
 
 export default function App() {
   const { isAuthenticated, init: initAuth } = useAuthStore();
   const { init: initWallet } = useWalletStore();
   const { init: initGroups } = useGroupStore();
+  const { showToast } = useUIStore();
 
   useEffect(() => {
     initAuth();
@@ -36,10 +38,11 @@ export default function App() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      initWallet();
-      initGroups();
+      Promise.all([initWallet(), initGroups()]).catch(() => {
+        showToast('error', 'Could not load wallet data. Please try again.');
+      });
     }
-  }, [isAuthenticated, initWallet, initGroups]);
+  }, [isAuthenticated, initWallet, initGroups, showToast]);
 
   return (
     <QueryClientProvider client={queryClient}>

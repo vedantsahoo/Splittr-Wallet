@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useGroupStore } from '@/store/groupStore';
 import { useUIStore } from '@/store/uiStore';
+import { useAuthStore } from '@/store/authStore';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import type { SplitType } from '@/types';
 
@@ -30,9 +31,14 @@ export default function GroupDetailsScreen() {
   const { getGroup, addExpense, deleteExpense, getGroupBalances } = useGroupStore();
 
   const { showToast } = useUIStore();
+  const { user } = useAuthStore();
 
   const group = groupId ? getGroup(groupId) : undefined;
   const balances_list = groupId ? getGroupBalances(groupId) : [];
+  const myMemberId = user?.id || group?.members.find(member => member.name === 'You')?.id || '';
+  const selectedPayerId = group?.members.some(member => member.id === expensePaidBy)
+    ? expensePaidBy
+    : myMemberId || group?.members[0]?.id || '';
 
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [showSettleUp, setShowSettleUp] = useState(false);
@@ -42,9 +48,11 @@ export default function GroupDetailsScreen() {
   const [expenseDesc, setExpenseDesc] = useState('');
   const [expenseAmount, setExpenseAmount] = useState('');
   const [expenseCategory, setExpenseCategory] = useState('Food & Dining');
-  const [expensePaidBy, setExpensePaidBy] = useState('1');
+  const [expensePaidBy, setExpensePaidBy] = useState('');
   const [splitType, setSplitType] = useState<SplitType>('equal');
   const [customShares, setCustomShares] = useState<Record<string, string>>({});
+  const [isAddingExpense, setIsAddingExpense] = useState(false);
+  const [isDeletingExpense, setIsDeletingExpense] = useState(false);
 
   // Settle up state
   const [settleMember, setSettleMember] = useState('');
@@ -58,11 +66,11 @@ export default function GroupDetailsScreen() {
     );
   }
 
-  const myBalance = balances_list.find(b => b.memberId === '1')?.netBalance || 0;
+  const myBalance = balances_list.find(b => b.memberId === myMemberId)?.netBalance || 0;
 
-  const handleAddExpense = () => {
+  const handleAddExpense = async () => {
     const amount = parseFloat(expenseAmount);
-    if (!expenseDesc.trim() || amount <= 0) return;
+    if (!expenseDesc.trim() || amount <= 0 || !selectedPayerId || isAddingExpense) return;
 
     const shares = group.members.map(m => {
       let shareAmount = amount / group.members.length;
@@ -76,24 +84,31 @@ export default function GroupDetailsScreen() {
       };
     });
 
-    const paidByMember = group.members.find(m => m.id === expensePaidBy);
+    const paidByMember = group.members.find(m => m.id === selectedPayerId);
 
-    addExpense(group.id, {
-      description: expenseDesc.trim(),
-      amount,
-      paidBy: expensePaidBy,
-      paidByName: paidByMember?.name || 'You',
-      date: new Date().toISOString().split('T')[0],
-      category: expenseCategory,
-      splitType,
-      shares,
-    });
+    setIsAddingExpense(true);
+    try {
+      await addExpense(group.id, {
+        description: expenseDesc.trim(),
+        amount,
+        paidBy: selectedPayerId,
+        paidByName: paidByMember?.name || 'You',
+        date: new Date().toISOString().split('T')[0],
+        category: expenseCategory,
+        splitType,
+        shares,
+      });
 
-    showToast('success', `Expense "${expenseDesc}" added!`);
-    setShowAddExpense(false);
-    setExpenseDesc('');
-    setExpenseAmount('');
-    setCustomShares({});
+      showToast('success', `Expense "${expenseDesc}" added!`);
+      setShowAddExpense(false);
+      setExpenseDesc('');
+      setExpenseAmount('');
+      setCustomShares({});
+    } catch (error) {
+      showToast('error', error instanceof Error ? error.message : 'Could not add expense');
+    } finally {
+      setIsAddingExpense(false);
+    }
   };
 
   const handleSettleUp = () => {
@@ -175,8 +190,8 @@ export default function GroupDetailsScreen() {
           </div>
         ) : (
           group.expenses.map((expense, idx) => {
-            const myShare = expense.shares.find(s => s.memberId === '1');
-            const isOwed = expense.paidBy === '1';
+            const myShare = expense.shares.find(s => s.memberId === myMemberId);
+            const isOwed = expense.paidBy === myMemberId;
             return (
               <motion.button
                 key={expense.id}
@@ -235,7 +250,7 @@ export default function GroupDetailsScreen() {
                 <div className="flex gap-2 overflow-x-auto scrollbar-hide">
                   {group.members.map(m => (
                     <button key={m.id} onClick={() => setExpensePaidBy(m.id)}
-                      className={`px-3 py-2 rounded-full text-xs font-medium shrink-0 transition-all cursor-pointer ${expensePaidBy === m.id ? 'bg-[#10B981] text-white' : 'bg-[#F5F5F5] dark:bg-[#085444] text-[#333] dark:text-[#E2E8F0] hover:bg-[#E5E5E5] dark:hover:bg-[#0E6E5A]'
+                      className={`px-3 py-2 rounded-full text-xs font-medium shrink-0 transition-all cursor-pointer ${selectedPayerId === m.id ? 'bg-[#10B981] text-white' : 'bg-[#F5F5F5] dark:bg-[#085444] text-[#333] dark:text-[#E2E8F0] hover:bg-[#E5E5E5] dark:hover:bg-[#0E6E5A]'
                         }`}>{m.name}</button>
                   ))}
                 </div>
@@ -265,9 +280,9 @@ export default function GroupDetailsScreen() {
                 </div>
               </div>
 
-              <button onClick={handleAddExpense} disabled={!expenseDesc.trim() || !expenseAmount || parseFloat(expenseAmount) <= 0}
+              <button onClick={handleAddExpense} disabled={isAddingExpense || !expenseDesc.trim() || !expenseAmount || parseFloat(expenseAmount) <= 0 || !selectedPayerId}
                 className="w-full py-4 rounded-xl bg-[#10B981] text-white font-semibold shadow-button hover:bg-[#059669] disabled:opacity-50 transition-all cursor-pointer">
-                Add Expense
+                {isAddingExpense ? 'Adding...' : 'Add Expense'}
               </button>
             </motion.div>
           </motion.div>
@@ -348,7 +363,7 @@ export default function GroupDetailsScreen() {
               <h4 className="text-sm font-semibold text-[#333] dark:text-[#E2E8F0] mb-2">Split Details</h4>
               <div className="space-y-2 mb-4">
                 {selectedExpense.shares.map(share => {
-                  const isMe = share.memberId === '1';
+                  const isMe = share.memberId === myMemberId;
                   return (
                     <div key={share.memberId} className="flex items-center justify-between p-3 bg-[#ECFDF5] dark:bg-[#094F40] border border-[#F0F0F0]/5 rounded-xl">
                       <span className={`text-sm ${isMe ? 'font-semibold text-[#10B981] dark:text-emerald-400' : 'text-[#333] dark:text-[#E2E8F0]'}`}>
@@ -362,13 +377,22 @@ export default function GroupDetailsScreen() {
 
               <button
                 onClick={() => {
-                  deleteExpense(group.id, selectedExpense.id);
-                  setShowExpenseDetail(null);
-                  showToast('success', 'Expense deleted');
+                  if (isDeletingExpense) return;
+                  setIsDeletingExpense(true);
+                  deleteExpense(group.id, selectedExpense.id)
+                    .then(() => {
+                      setShowExpenseDetail(null);
+                      showToast('success', 'Expense deleted');
+                    })
+                    .catch((error) => {
+                      showToast('error', error instanceof Error ? error.message : 'Could not delete expense');
+                    })
+                    .finally(() => setIsDeletingExpense(false));
                 }}
-                className="w-full py-3 rounded-xl bg-[#FEE2E2] dark:bg-[#EF4444]/10 text-[#EF4444] dark:text-red-500 font-medium hover:bg-[#FECACA] dark:hover:bg-[#EF4444]/25 transition-all cursor-pointer"
+                disabled={isDeletingExpense}
+                className="w-full py-3 rounded-xl bg-[#FEE2E2] dark:bg-[#EF4444]/10 text-[#EF4444] dark:text-red-500 font-medium hover:bg-[#FECACA] dark:hover:bg-[#EF4444]/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
-                Delete Expense
+                {isDeletingExpense ? 'Deleting...' : 'Delete Expense'}
               </button>
             </motion.div>
           </motion.div>

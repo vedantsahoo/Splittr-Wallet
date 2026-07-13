@@ -1,11 +1,12 @@
 import { create } from 'zustand';
-import type { WalletBalance, Transaction, SavingsGoal } from '@/types';
+import { apiRequest } from '@/lib/api';
+import type { Contact, WalletBalance, Transaction, SavingsGoal } from '@/types';
 
 interface WalletState {
   balances: WalletBalance[];
   transactions: Transaction[];
   savingsGoals: SavingsGoal[];
-  contacts: any[];
+  contacts: Contact[];
   selectedCurrency: string;
   init: () => Promise<void>;
   setCurrency: (currency: string) => void;
@@ -15,7 +16,7 @@ interface WalletState {
   addSavingsGoal: (goal: SavingsGoal) => Promise<void>;
   updateGoalProgress: (id: string, amount: number) => Promise<void>;
   getBalance: (currency: string) => number;
-  addContact: (name: string, phone: string) => Promise<void>;
+  addContact: (name: string, phone: string) => Promise<Contact>;
 }
 
 export const useWalletStore = create<WalletState>((set, get) => ({
@@ -26,24 +27,14 @@ export const useWalletStore = create<WalletState>((set, get) => ({
   selectedCurrency: 'INR',
 
   init: async () => {
-    try {
-      const [balRes, txRes, goalRes, contactRes] = await Promise.all([
-        fetch('/api/wallet/balances'),
-        fetch('/api/wallet/transactions'),
-        fetch('/api/wallet/savings-goals'),
-        fetch('/api/wallet/contacts')
-      ]);
+    const [balances, transactions, savingsGoals, contacts] = await Promise.all([
+      apiRequest<WalletBalance[]>('/api/wallet/balances'),
+      apiRequest<Transaction[]>('/api/wallet/transactions'),
+      apiRequest<SavingsGoal[]>('/api/wallet/savings-goals'),
+      apiRequest<Contact[]>('/api/wallet/contacts')
+    ]);
 
-      if (balRes.ok && txRes.ok && goalRes.ok && contactRes.ok) {
-        const balances = await balRes.json();
-        const transactions = await txRes.json();
-        const savingsGoals = await goalRes.json();
-        const contacts = await contactRes.json();
-        set({ balances, transactions, savingsGoals, contacts });
-      }
-    } catch (e) {
-      console.error('Failed to initialize wallet store', e);
-    }
+    set({ balances, transactions, savingsGoals, contacts });
   },
 
   setCurrency: (currency) => set({ selectedCurrency: currency }),
@@ -54,33 +45,21 @@ export const useWalletStore = create<WalletState>((set, get) => ({
   },
 
   addFunds: async (amount, currency) => {
-    try {
-      const res = await fetch('/api/wallet/add-funds', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, currency }),
-      });
-      if (res.ok) {
-        await get().init();
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    await apiRequest<{ success: boolean; newAmount: number }>('/api/wallet/add-funds', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount, currency }),
+    });
+    await get().init();
   },
 
   sendMoney: async (amount, currency, recipientPhone, recipientName) => {
-    try {
-      const res = await fetch('/api/wallet/send-money', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, currency, recipientPhone, recipientName }),
-      });
-      if (res.ok) {
-        await get().init();
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    await apiRequest<{ success: boolean; newAmount: number }>('/api/wallet/send-money', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount, currency, recipientPhone, recipientName }),
+    });
+    await get().init();
   },
 
   addTransaction: (transaction) =>
@@ -89,47 +68,30 @@ export const useWalletStore = create<WalletState>((set, get) => ({
     })),
 
   addSavingsGoal: async (goal) => {
-    try {
-      const res = await fetch('/api/wallet/savings-goals', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(goal),
-      });
-      if (res.ok) {
-        await get().init();
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    await apiRequest<SavingsGoal>('/api/wallet/savings-goals', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(goal),
+    });
+    await get().init();
   },
 
   updateGoalProgress: async (id, amount) => {
-    try {
-      const res = await fetch(`/api/wallet/savings-goals/${id}/progress`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount }),
-      });
-      if (res.ok) {
-        await get().init();
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    await apiRequest<SavingsGoal>(`/api/wallet/savings-goals/${id}/progress`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount }),
+    });
+    await get().init();
   },
 
   addContact: async (name, phone) => {
-    try {
-      const res = await fetch('/api/wallet/contacts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, phone }),
-      });
-      if (res.ok) {
-        await get().init();
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    const contact = await apiRequest<Contact>('/api/wallet/contacts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, phone }),
+    });
+    await get().init();
+    return contact;
   }
 }));

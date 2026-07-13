@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { apiRequest } from '@/lib/api';
 import type { Group, GroupExpense } from '@/types';
 import { useWalletStore } from './walletStore.js';
 
@@ -8,8 +9,8 @@ interface GroupState {
   init: () => Promise<void>;
   setCurrentGroup: (id: string | null) => void;
   createGroup: (group: Omit<Group, 'id' | 'expenses' | 'totalExpenses'>) => Promise<Group | undefined>;
-  addExpense: (groupId: string, expense: Omit<GroupExpense, 'id'>) => Promise<void>;
-  deleteExpense: (groupId: string, expenseId: string) => Promise<void>;
+  addExpense: (groupId: string, expense: Omit<GroupExpense, 'id'>) => Promise<Group>;
+  deleteExpense: (groupId: string, expenseId: string) => Promise<Group>;
   getGroup: (id: string) => Group | undefined;
   getGroupBalances: (groupId: string) => { memberId: string; memberName: string; netBalance: number }[];
 }
@@ -19,65 +20,40 @@ export const useGroupStore = create<GroupState>((set, get) => ({
   currentGroupId: null,
 
   init: async () => {
-    try {
-      const res = await fetch('/api/groups');
-      if (res.ok) {
-        const groups = await res.json();
-        set({ groups });
-      }
-    } catch (e) {
-      console.error('Failed to initialize group store', e);
-    }
+    const groups = await apiRequest<Group[]>('/api/groups');
+    set({ groups });
   },
 
   setCurrentGroup: (id: string | null) => set({ currentGroupId: id }),
 
   createGroup: async (groupData) => {
-    try {
-      const res = await fetch('/api/groups', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(groupData),
-      });
-      if (res.ok) {
-        const newGroup = await res.json();
-        await get().init();
-        return newGroup;
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    const newGroup = await apiRequest<Group>('/api/groups', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(groupData),
+    });
+    await get().init();
+    return newGroup;
   },
 
   addExpense: async (groupId, expense) => {
-    try {
-      const res = await fetch(`/api/groups/${groupId}/expenses`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(expense),
-      });
-      if (res.ok) {
-        await get().init();
-        // Also refresh wallet store so transactions list is updated with the group expense transaction!
-        await useWalletStore.getState().init();
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    const group = await apiRequest<Group>(`/api/groups/${groupId}/expenses`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(expense),
+    });
+    await get().init();
+    await useWalletStore.getState().init();
+    return group;
   },
 
   deleteExpense: async (groupId, expenseId) => {
-    try {
-      const res = await fetch(`/api/groups/${groupId}/expenses/${expenseId}`, {
-        method: 'DELETE',
-      });
-      if (res.ok) {
-        await get().init();
-        await useWalletStore.getState().init();
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    const group = await apiRequest<Group>(`/api/groups/${groupId}/expenses/${expenseId}`, {
+      method: 'DELETE',
+    });
+    await get().init();
+    await useWalletStore.getState().init();
+    return group;
   },
 
   getGroup: (id: string) => get().groups.find((g) => g.id === id),
