@@ -8,6 +8,7 @@ import {
 import { useWalletStore } from '@/store/walletStore';
 import { useGroupStore } from '@/store/groupStore';
 import { useUIStore } from '@/store/uiStore';
+import { useAuthStore } from '@/store/authStore';
 import { formatCurrency, formatRelativeDate } from '@/lib/utils';
 import type { Transaction, SavingsGoal } from '@/types';
 
@@ -58,10 +59,18 @@ function TransactionItem({ tx }: { tx: Transaction }) {
 
 export default function DashboardScreen() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const { balances, transactions, savingsGoals, selectedCurrency, updateGoalProgress, addSavingsGoal } = useWalletStore();
   const { groups } = useGroupStore();
   const { showToast } = useUIStore();
   const currentBalance = balances.find(b => b.currency === selectedCurrency)?.amount || 0;
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
   const recentTransactions = transactions.slice(0, 5);
 
   // Savings goals state
@@ -124,6 +133,16 @@ export default function DashboardScreen() {
   return (
     <div className="px-5 py-4 lg:px-12 lg:py-8 max-w-350 mx-auto text-[#333] dark:text-[#E2E8F0]">
       <motion.div variants={container} initial="hidden" animate="show">
+        {/* Welcome Greeting */}
+        <motion.div variants={item} className="mb-6">
+          <h1 className="text-2xl font-bold tracking-tight text-black dark:text-white">
+            {getGreeting()}, {user?.name?.split(' ')[0] || 'User'}! 👋
+          </h1>
+          <p className="text-xs text-[#888] dark:text-[#94A3B8] mt-0.5">
+            Let's manage your shares and digital payments today.
+          </p>
+        </motion.div>
+
         {/* Hero Banner */}
         <motion.div variants={item} className="gradient-hero rounded-3xl p-6 text-white relative overflow-hidden shadow-[0_8px_30px_rgb(79,70,229,0.3)] dark:shadow-none">
           <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
