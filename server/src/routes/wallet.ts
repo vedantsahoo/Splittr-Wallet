@@ -22,6 +22,62 @@ function parsePositiveAmount(value: unknown, fieldName = 'amount') {
   return amount;
 }
 
+function checkLimits(userId: string, amount: number, date: string, currency: string) {
+  let amountInINR = amount;
+  if (currency === 'USD') {
+    amountInINR = amount * 83;
+  } else if (currency === 'EUR') {
+    amountInINR = amount * 90;
+  }
+
+  const user = db.prepare('SELECT daily_limit, monthly_limit FROM users WHERE id = ?').get(userId) as any;
+  if (!user) return;
+
+  const dailyLimit = user.daily_limit;
+  const monthlyLimit = user.monthly_limit;
+
+  const dailyTransactions = db.prepare(`
+    SELECT amount, currency 
+    FROM transactions 
+    WHERE user_id = ? 
+      AND type IN ('sent', 'withdrawal', 'group_expense', 'group_settlement') 
+      AND date = ?
+  `).all(userId, date) as { amount: number; currency: string }[];
+
+  let dailySpent = 0;
+  dailyTransactions.forEach(tx => {
+    let txAmt = tx.amount;
+    if (tx.currency === 'USD') txAmt *= 83;
+    else if (tx.currency === 'EUR') txAmt *= 90;
+    dailySpent += txAmt;
+  });
+
+  if (dailySpent + amountInINR > dailyLimit) {
+    throw new Error(`Transaction exceeds your daily transfer limit of ₹${dailyLimit.toLocaleString('en-IN')}. Remaining: ₹${Math.max(0, dailyLimit - dailySpent).toLocaleString('en-IN')}`);
+  }
+
+  const monthPattern = date.slice(0, 7) + '%';
+  const monthlyTransactions = db.prepare(`
+    SELECT amount, currency 
+    FROM transactions 
+    WHERE user_id = ? 
+      AND type IN ('sent', 'withdrawal', 'group_expense', 'group_settlement') 
+      AND date LIKE ?
+  `).all(userId, monthPattern) as { amount: number; currency: string }[];
+
+  let monthlySpent = 0;
+  monthlyTransactions.forEach(tx => {
+    let txAmt = tx.amount;
+    if (tx.currency === 'USD') txAmt *= 83;
+    else if (tx.currency === 'EUR') txAmt *= 90;
+    monthlySpent += txAmt;
+  });
+
+  if (monthlySpent + amountInINR > monthlyLimit) {
+    throw new Error(`Transaction exceeds your monthly transfer limit of ₹${monthlyLimit.toLocaleString('en-IN')}. Remaining: ₹${Math.max(0, monthlyLimit - monthlySpent).toLocaleString('en-IN')}`);
+  }
+}
+
 // GET /api/wallet/balances
 router.get('/balances', requireAuth, (req: any, res) => {
   try {
@@ -99,6 +155,11 @@ router.post('/send-money', requireAuth, (req: any, res) => {
 
   const performSend = db.transaction(() => {
     const amount = parsePositiveAmount(req.body.amount);
+    const txDate = new Date().toISOString().split('T')[0];
+
+    // Enforce daily/monthly limits
+    checkLimits(userId, amount, txDate, currency);
+
     const cleanRecipientName = String(recipientName || '').trim();
     if (!cleanRecipientName) {
       throw new Error('Recipient name is required');
@@ -136,7 +197,6 @@ router.post('/send-money', requireAuth, (req: any, res) => {
       }
     }
 
-    const txDate = new Date().toISOString().split('T')[0];
     const senderInitials = sender.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
     const recipientInitials = cleanRecipientName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
 
@@ -197,6 +257,7 @@ router.post('/send-money', requireAuth, (req: any, res) => {
       'required',
       'not supported',
       'Insufficient balance',
+      'exceeds',
     ].some((message) => error.message.includes(message));
     res.status(isClientError ? 400 : 500).json({ error: error.message });
   }

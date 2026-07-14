@@ -54,7 +54,7 @@ function SettingItem({ icon, title, subtitle, right, onClick, danger }: SettingI
 }
 
 export default function SettingsScreen() {
-  const { user, logout, updateProfile } = useAuthStore();
+  const { user, logout, updateProfile, dailyLimit, monthlyLimit, updateLimits } = useAuthStore();
   const { showToast } = useUIStore();
   const { isDarkMode, toggleDarkMode } = useThemeStore();
 
@@ -66,6 +66,9 @@ export default function SettingsScreen() {
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editName, setEditName] = useState(user?.name || '');
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showEditLimits, setShowEditLimits] = useState(false);
+  const [newDailyLimit, setNewDailyLimit] = useState(dailyLimit.toString());
+  const [newMonthlyLimit, setNewMonthlyLimit] = useState(monthlyLimit.toString());
 
   const handleSaveProfile = () => {
     updateProfile({ name: editName });
@@ -137,7 +140,16 @@ export default function SettingsScreen() {
           <div className="h-px bg-[#F0F0F0] dark:bg-[#094F40] mx-1" />
           <SettingItem icon={<Lock className="w-5 h-5 text-[#10B981] dark:text-emerald-400" />} title="Change Password" subtitle="Last changed 2 months ago" />
           <div className="h-px bg-[#F0F0F0] dark:bg-[#094F40] mx-1" />
-          <SettingItem icon={<Gauge className="w-5 h-5 text-[#10B981] dark:text-emerald-400" />} title="Daily Transfer Limit" subtitle="Current: Rs. 50,000" />
+          <SettingItem
+            icon={<Gauge className="w-5 h-5 text-[#10B981] dark:text-emerald-400" />}
+            title="Transfer Limits"
+            subtitle={`Daily: ₹${dailyLimit.toLocaleString('en-IN')} • Monthly: ₹${monthlyLimit.toLocaleString('en-IN')}`}
+            onClick={() => {
+              setNewDailyLimit(dailyLimit.toString());
+              setNewMonthlyLimit(monthlyLimit.toString());
+              setShowEditLimits(true);
+            }}
+          />
           <div className="h-px bg-[#F0F0F0] dark:bg-[#094F40] mx-1" />
           <SettingItem icon={<Monitor className="w-5 h-5 text-[#10B981] dark:text-emerald-400" />} title="Login Activity" subtitle="View active sessions" />
         </div>
@@ -330,6 +342,53 @@ export default function SettingsScreen() {
                   className="flex-1 py-3 rounded-xl border-2 border-[#E0E0E0] dark:border-[#0E6E5A] text-sm font-medium text-[#333] dark:text-[#E2E8F0] hover:bg-[#ECFDF5] dark:hover:bg-[#085444]">Cancel</button>
                 <button onClick={handleLogout}
                   className="flex-1 py-3 rounded-xl bg-[#EF4444] text-white text-sm font-medium hover:bg-[#DC2626]">Logout</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Limits Modal */}
+      <AnimatePresence>
+        {showEditLimits && (
+          <motion.div className="fixed inset-0 z-[400] flex items-center justify-center p-4"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" onClick={() => setShowEditLimits(false)} />
+            <motion.div
+              className="relative bg-white dark:bg-[#043C31] border border-[#F0F0F0]/10 rounded-3xl p-6 z-10 w-full max-w-sm"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 300 }}>
+              <h3 className="text-lg font-semibold text-[#000] dark:text-white mb-4">Update Transfer Limits</h3>
+              
+              <div className="mb-4">
+                <label htmlFor="daily-limit-input" className="text-sm font-medium text-[#333] dark:text-[#E2E8F0] mb-2 block">Daily Transfer Limit (₹)</label>
+                <input id="daily-limit-input" type="number" value={newDailyLimit} onChange={e => setNewDailyLimit(e.target.value)} placeholder="Daily Limit" title="Daily Limit"
+                  className="w-full px-4 py-3 bg-transparent border-2 border-[#E0E0E0] dark:border-[#0E6E5A] dark:text-white rounded-xl text-sm focus:border-[#10B981] dark:focus:border-emerald-400 focus:outline-none" />
+              </div>
+              
+              <div className="mb-6">
+                <label htmlFor="monthly-limit-input" className="text-sm font-medium text-[#333] dark:text-[#E2E8F0] mb-2 block">Monthly Transfer Limit (₹)</label>
+                <input id="monthly-limit-input" type="number" value={newMonthlyLimit} onChange={e => setNewMonthlyLimit(e.target.value)} placeholder="Monthly Limit" title="Monthly Limit"
+                  className="w-full px-4 py-3 bg-transparent border-2 border-[#E0E0E0] dark:border-[#0E6E5A] dark:text-white rounded-xl text-sm focus:border-[#10B981] dark:focus:border-emerald-400 focus:outline-none" />
+              </div>
+              
+              <div className="flex gap-3">
+                <button onClick={() => setShowEditLimits(false)}
+                  className="flex-1 py-3 rounded-xl border-2 border-[#E0E0E0] dark:border-[#0E6E5A] text-sm font-medium text-[#333] dark:text-[#E2E8F0] hover:bg-[#ECFDF5] dark:hover:bg-[#085444] cursor-pointer">Cancel</button>
+                <button onClick={() => {
+                  const daily = parseFloat(newDailyLimit);
+                  const monthly = parseFloat(newMonthlyLimit);
+                  if (daily > 0 && monthly > 0) {
+                    updateLimits(daily, monthly);
+                    setShowEditLimits(false);
+                    showToast('success', 'Transfer limits updated successfully!');
+                  } else {
+                    showToast('error', 'Limits must be positive numbers');
+                  }
+                }}
+                  className="flex-1 py-3 rounded-xl bg-[#10B981] text-white text-sm font-medium shadow-button hover:bg-[#059669] cursor-pointer">Save</button>
               </div>
             </motion.div>
           </motion.div>

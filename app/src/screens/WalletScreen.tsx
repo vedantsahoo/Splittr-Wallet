@@ -66,6 +66,7 @@ export default function WalletScreen() {
   const [isAddingMoney, setIsAddingMoney] = useState(false);
 
   const currentBalance = balances.find(b => b.currency === selectedCurrency)?.amount || 0;
+  const currencySymbol = balances.find(b => b.currency === selectedCurrency)?.symbol || '₹';
 
   const filteredTransactions = transactions.filter(tx => {
     if (activeFilter === 'All') return true;
@@ -274,7 +275,7 @@ export default function WalletScreen() {
               <div className="mb-4">
                 <label className="text-sm font-medium text-[#333] dark:text-[#E2E8F0] mb-2 block">Amount ({selectedCurrency})</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-[#888] dark:text-[#94A3B8]">Rs.</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-[#888] dark:text-[#94A3B8]">{currencySymbol}</span>
                   <input
                     type="number"
                     value={addAmount}
@@ -301,7 +302,7 @@ export default function WalletScreen() {
                 disabled={isAddingMoney || !addAmount || parseFloat(addAmount) <= 0}
                 className="w-full py-4 rounded-xl bg-[#10B981] text-white font-semibold text-lg shadow-button hover:bg-[#059669] transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer"
               >
-                {isAddingMoney ? 'Adding...' : `Add Rs. ${addAmount || '0'}`}
+                {isAddingMoney ? 'Adding...' : `Add ${currencySymbol} ${addAmount || '0'}`}
               </button>
             </motion.div>
           </motion.div>
@@ -329,17 +330,17 @@ export default function WalletScreen() {
                 <X className="w-5 h-5 text-[#888] dark:text-[#94A3B8]" />
               </button>
               <h3 className="text-lg font-semibold text-[#000] dark:text-[#E2E8F0] mb-1">Receive Money</h3>
-              <p className="text-sm text-[#888] dark:text-[#94A3B8] mb-4">Scan to pay Vedant Sahu</p>
+              <p className="text-sm text-[#888] dark:text-[#94A3B8] mb-4">Scan to pay {user?.name}</p>
               <div className="bg-white p-4 rounded-2xl shadow-card inline-block">
                 <QRCodeSVG
-                  value={`upi://pay?pa=7007248526@slc&pn=Vedant Sahu&am=`}
+                  value={`upi://pay?pa=${user?.phone?.split(' ')[1] || '7007248526'}@slc&pn=${user?.name || 'User'}&am=`}
                   size={200}
                   level="M"
                   includeMargin={false}
                 />
               </div>
-              <p className="text-sm font-medium text-[#333] dark:text-[#E2E8F0] mt-4">Vedant Sahu</p>
-              <p className="text-xs text-[#888] dark:text-[#94A3B8]">SW-78456231</p>
+              <p className="text-sm font-medium text-[#333] dark:text-[#E2E8F0] mt-4">{user?.name}</p>
+              <p className="text-xs text-[#888] dark:text-[#94A3B8]">Wallet ID: {user?.walletId}</p>
             </motion.div>
           </motion.div>
         )}
